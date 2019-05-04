@@ -29,8 +29,6 @@ DADOS	SEGMENT PARA 'DATA'
 	FACTOR			db	100
 	metade_FACTOR	db	?
 	resto			db	0
-						
-
 
 DADOS	ENDS
 
@@ -200,6 +198,7 @@ PASSA_TEMPO   ENDP
 menu_controller PROC
 
 show_main_menu:
+
 	lea		dx, Menu
 	call	Imp_Fich
 
@@ -219,13 +218,30 @@ show_main_menu:
 	jmp		show_main_menu
 
 gameopts:
-	lea		dx,	Menu
+
+	lea		dx,	newGame
 	call	Imp_Fich
-	jmp		show_main_menu
+
+gameopts_wrong_input:
+
+	call 	get_menu_option
+
+	cmp		al, '1'
+	je		show_main_menu		; Classic Game
+
+	cmp		al, '2'
+	je		show_main_menu 		; Bonus Game
+
+	cmp 	al, '3'
+	je		show_main_menu
+
+	jmp		gameopts_wrong_input
 
 stats:
 	lea		dx, ShowStats
 	call	Imp_Fich
+
+stats_wrong_input:
 
 	call 	get_menu_option
 
@@ -240,7 +256,11 @@ stats:
 	cmp		al, '3'
 	jmp 	show_main_menu
 
+	jmp		stats_wrong_input
+
+
 madeby:
+
 	lea 	dx, Credits
 	call	Imp_Fich
 
@@ -252,16 +272,16 @@ madeby:
 menu_controller endp
 
 get_menu_option PROC
-	mov			POSX, 3
-	mov			POSY, 23
+	mov			POSX, 21
+	mov			POSY, 22
 	goto_xy		POSx,POSy	; Vai para posição do cursor
 	
-	mov			ah, 02h
-	mov			dx, '>'	
-	int			21h
+	; mov			ah, 02h
+	; mov			dx, '>'	
+	; int			21h
 	
-	inc 		POSX
-	goto_xy 	POSX, POSY
+	; inc 		POSX
+	; goto_xy 	POSX, POSY
 
 	mov			ah,	07h
 	int			21h
@@ -277,6 +297,8 @@ INICIO:
 	MOV			ES,AX			; (?)	; ES indica segmento de memória de VIDEO
 	CALL 		APAGA_ECRAN
 	call		menu_controller
+
+
 
 fim:	mov     ah,4ch
 	int     21h
