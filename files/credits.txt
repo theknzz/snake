@@ -12,7 +12,7 @@
                                                                                
 
                         Implemented by:
-                            > Andre Coelho   - rimefodime
+                            > Andre Coelho   - 21270347
                             > Joaquim Santos - 21270351
 
 
