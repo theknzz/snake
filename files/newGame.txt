@@ -12,10 +12,10 @@
                                                                                
 
 
-                            1 - Game history
-                            2 - Statistical Values
-                            3 - Back
-
+                                1 - Classic game
+                                2 - Bonus game
+                                3 - Back to main menu
+                                
 
 
       Insert Option > 
