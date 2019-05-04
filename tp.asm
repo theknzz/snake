@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 .8086
 .model	small
 .stack	2048
