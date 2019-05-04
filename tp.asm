@@ -6,6 +6,7 @@ DADOS	SEGMENT PARA 'DATA'
 
     Menu            db      './files/menu.txt',0
 	newgame			db		'./files/newGame.txt',0
+	ClassicGame		db		'./files/moldura.txt',0
 	ShowStats		db		'./files/stats.txt',0
 	Credits			db		'./files/credits.txt',0
 	GameOver		db		'./files/gameOver.txt',0
@@ -16,19 +17,22 @@ DADOS	SEGMENT PARA 'DATA'
     HandleFich      dw      0
     car_fich        db      ?
 
-	POSy			db	10	; a linha pode ir de [1 .. 25]
-	POSx			db	40	; POSx pode ir [1..80]	
-	POSya			db	5	; Posição anterior de y
-	POSxa			db	10	; Posição anterior de x
+	POSy			db		10	; a linha pode ir de [1 .. 25]
+	POSx			db		40	; POSx pode ir [1..80]	
+	POSya			db		5	; Posição anterior de y
+	POSxa			db		10	; Posição anterior de x
 
-	PASSA_T			dw	0
-	PASSA_T_ant		dw	0
-	direccao		db	3
+	PASSA_T			dw		0
+	PASSA_T_ant		dw		0
+	direccao		db		3
 	
-	Centesimos		dw 	0
-	FACTOR			db	100
-	metade_FACTOR	db	?
-	resto			db	0
+	Centesimos		dw 		0
+	FACTOR			db		100
+	metade_FACTOR	db		?
+	resto			db		0
+
+	ultimo_num_aleat dw 	0
+	
 
 DADOS	ENDS
 
@@ -51,7 +55,7 @@ ENDM
 
 Imp_Fich	PROC
 ;abre ficheiro
-		call 	APAGA_ECRAN
+		call 	clear_screen
         mov     ah,3dh			; vamos abrir ficheiro para leitura 
         mov     al,0			; tipo de ficheiro	
         ;lea     dx, Menu		; nome do ficheiro
@@ -99,29 +103,29 @@ Imp_Fich	endp
 
 
 ;ROTINA PARA APAGAR ECRAN
-APAGA_ECRAN	PROC
+clear_screen	PROC
 		PUSH BX
 		PUSH AX
 		PUSH CX
 		PUSH SI
 		XOR	BX,BX
-		MOV	CX,24*80
-		mov bx,160
+		MOV	CX, 25*80
+		mov bx, 160
 		MOV SI,BX
-APAGA:	
-		MOV	AL,' '
+clear:	
+		MOV	AL,0h ; nul char
 		MOV	BYTE PTR ES:[BX],AL
 		MOV	BYTE PTR ES:[BX+1],7
 		INC	BX
 		INC BX
 		INC SI
-		LOOP	APAGA
+		LOOP	clear
 		POP SI
 		POP CX
 		POP AX
 		POP BX
 		RET
-APAGA_ECRAN	ENDP
+clear_screen	ENDP
 
 
 
@@ -227,8 +231,7 @@ gameopts_wrong_input:
 	call 	get_menu_option
 
 	cmp		al, '1'
-	je		show_main_menu		; Classic Game
-
+	je 		classic_game
 	cmp		al, '2'
 	je		show_main_menu 		; Bonus Game
 
@@ -236,6 +239,14 @@ gameopts_wrong_input:
 	je		show_main_menu
 
 	jmp		gameopts_wrong_input
+
+classic_game:
+	lea		dx,	ClassicGame
+	call	Imp_Fich
+	;call	move_snake
+	mov	ah,07h
+	int 21h
+	jmp		show_main_menu
 
 stats:
 	lea		dx, ShowStats
@@ -290,12 +301,194 @@ get_menu_option PROC
 
 get_menu_option endp
 
+move_snake PROC
+		call 		CalcAleat
+		mov			POSx, 10
+		call		CalcAleat
+		mov			POSY, 10
+CICLO:	
+		goto_xy		POSx,POSy		; Vai para nova possição
+		mov 		ah, 08h			; Guarda o Caracter que está na posição do Cursor
+		mov			bh,0			; numero da página
+		int			10h			
+		cmp 		al, '#'			;  na posição do Cursor
+		je			fim
+
+		goto_xy		POSxa,POSya		; Vai para a posição anterior do cursor
+		mov			ah, 02h
+		mov			dl, ' ' 		; Coloca ESPAÇO
+		int			21H	
+
+		inc			POSxa
+		goto_xy		POSxa,POSya	
+		mov			ah, 02h
+		mov			dl, ' '			;  Coloca ESPAÇO
+		int			21H	
+		dec 		POSxa
+		
+		goto_xy		POSx,POSy		; Vai para posição do cursor
+
+IMPRIME:	
+		mov			ah, 02h
+		mov			dl, '('			; Coloca AVATAR1
+		int			21H
+		
+		inc			POSx
+		goto_xy		POSx,POSy		
+		mov			ah, 02h
+		mov			dl, ')'			; Coloca AVATAR2
+		int			21H	
+		dec			POSx
+		
+		goto_xy		POSx,POSy		; Vai para posição do cursor
+		
+		mov			al, POSx		; Guarda a posição do cursor
+		mov			POSxa, al
+		mov			al, POSy		; Guarda a posição do cursor
+		mov			POSya, al
+		
+LER_SETA:	
+		call 		LE_TECLA_0
+		cmp			ah, 1
+		je			ESTEND
+		CMP 		AL, 27			; ESCAPE
+		JE			FIM
+		CMP			AL, '1'
+		JNE			TESTE_2
+		MOV			FACTOR, 100
+TESTE_2:	
+		CMP			AL, '2'
+		JNE			TESTE_3
+		MOV			FACTOR, 50
+TESTE_3:	
+		CMP			AL, '3'
+		JNE			TESTE_4
+		MOV			FACTOR, 25
+TESTE_4:
+		CMP			AL, '4'
+		JNE			TESTE_END
+		MOV			FACTOR, 10
+TESTE_END:		
+		CALL		PASSA_TEMPO
+		mov			AX, PASSA_T_ant
+		CMP			AX, PASSA_T
+		je			LER_SETA
+		mov			AX, PASSA_T
+		mov			PASSA_T_ant, AX
+		
+verifica_0:	
+		mov			al, direccao
+		cmp 		al, 0
+		jne			verifica_1
+		inc			POSx		;Direita
+		inc			POSx		;Direita
+		jmp			CICLO
+		
+verifica_1:	
+		mov 		al, direccao
+		cmp			al, 1
+		jne			verifica_2
+		dec			POSy		;cima
+		jmp			CICLO
+		
+verifica_2:	
+		mov 		al, direccao
+		cmp			al, 2
+		jne			verifica_3
+		dec			POSx		;Esquerda
+		dec			POSx		;Esquerda
+		jmp			CICLO
+		
+verifica_3:	
+		mov 		al, direccao
+		cmp			al, 3		
+		jne			CICLO
+		inc			POSy		;BAIXO		
+		jmp			CICLO
+		
+ESTEND:		
+		cmp 		al,48h
+		jne			BAIXO
+		mov			direccao, 1
+		jmp			CICLO
+
+BAIXO:		
+		cmp			al,50h
+		jne			ESQUERDA
+		mov			direccao, 3
+		jmp			CICLO
+
+ESQUERDA:
+		cmp			al,4Bh
+		jne			DIREITA
+		mov			direccao, 2
+		jmp			CICLO
+
+DIREITA:
+		cmp			al,4Dh
+		jne			LER_SETA 
+		mov			direccao, 0	
+		jmp			CICLO
+
+fim:		
+		goto_xy		40,23
+		RET
+
+move_snake ENDP
+
+;------------------------------------------------------
+;CalcAleat - calcula um numero aleatorio de 16 bits
+;Parametros passados pela pilha
+;entrada:
+;n�o tem parametros de entrada
+;saida:
+;param1 - 16 bits - numero aleatorio calculado
+;notas adicionais:
+; deve estar definida uma variavel => ultimo_num_aleat dw 0
+; assume-se que DS esta a apontar para o segmento onde esta armazenada ultimo_num_aleat
+CalcAleat proc near
+
+	sub		sp,2		; 
+	push	bp
+	mov		bp,sp
+	push	ax
+	push	cx
+	push	dx	
+	mov		ax,[bp+4]
+	mov		[bp+2],ax
+
+	mov		ah,00h
+	int		1ah
+
+	add		dx,ultimo_num_aleat	; vai buscar o aleat�rio anterior
+	add		cx,dx	
+	mov		ax,65521
+	push	dx
+	mul		cx			
+	pop		dx			 
+	xchg	dl,dh
+	add		dx,32749
+	add		dx,ax
+
+	mov		ultimo_num_aleat,dx	; guarda o novo numero aleat�rio  
+
+	mov		[BP+4],dx		; o aleat�rio � passado por pilha
+
+	pop		dx
+	pop		cx
+	pop		ax
+	pop		bp
+	ret
+
+CalcAleat endp
+
+
 INICIO:
 	mov     	ax, DADOS
 	mov     	ds, ax
 	MOV			AX,0B800H 		; (?)
 	MOV			ES,AX			; (?)	; ES indica segmento de memória de VIDEO
-	CALL 		APAGA_ECRAN
+	CALL 		clear_screen
 	call		menu_controller
 
 
