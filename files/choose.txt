@@ -1,4 +1,4 @@
-                                                                               
+
 
 
 
@@ -11,14 +11,15 @@
                      `8888Y' VP   V8P YP   YP YP   YD Y88888P                  
                                                                                
 
-
-                            1 - Game history
-                            2 - Statistical Values
-                            3 - Back
-
-
-
+                                                                             
+                                1 - Slug
+                                2 - Hare
+                                3 - Cheetah
+                                4 - Back to menu
+                                                                             
+                                                                             
       Insert Option > 
+                                                                             
 
-
-
+                       
+                                                                             
