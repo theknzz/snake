@@ -1,4 +1,4 @@
-                                                                              
+
 
 
 
@@ -11,12 +11,15 @@
                      `8888Y' VP   V8P YP   YP YP   YD Y88888P                  
                                                                                
 
-
+                                                                             
                                 1 - Classic game
                                 2 - Bonus game
                                 3 - Back to main menu
                                 
-
-
+                                                                             
+                                                                             
       Insert Option > 
+                                                                             
 
+                  
+                                                                             

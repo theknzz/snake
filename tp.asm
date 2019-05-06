@@ -7,15 +7,18 @@ DADOS	SEGMENT PARA 'DATA'
     Menu            db      './files/menu.txt',0
 	newgame			db		'./files/newGame.txt',0
 	ClassicGame		db		'./files/moldura.txt',0
+	cDifficulty		db		'./files/choose.txt',0
 	ShowStats		db		'./files/stats.txt',0
 	Credits			db		'./files/credits.txt',0
 	GameOver		db		'./files/gameOver.txt',0
 	GameWon			db		'./files/gameWon.txt',0
-    Erro_Open       db      'Erro ao tentar abrir o ficheiro$'
-    Erro_Ler_Msg    db      'Erro ao tentar ler do ficheiro$'
-    Erro_Close      db      'Erro ao tentar fechar o ficheiro$'
+    Erro_Open       db      '0-Erro ao tentar abrir o ficheiro$'
+    Erro_Ler_Msg    db      '1-Erro ao tentar ler do ficheiro$'
+    Erro_Close      db      '2-Erro ao tentar fechar o ficheiro$'
     HandleFich      dw      0
     car_fich        db      ?
+
+	difficulty		db		?
 
 	POSy			db		10	; a linha pode ir de [1 .. 25]
 	POSx			db		40	; POSx pode ir [1..80]	
@@ -113,7 +116,7 @@ clear_screen	PROC
 		mov bx, 160
 		MOV SI,BX
 clear:	
-		MOV	AL,0h ; nul char
+		MOV	AL, ' '
 		MOV	BYTE PTR ES:[BX],AL
 		MOV	BYTE PTR ES:[BX+1],7
 		INC	BX
@@ -138,7 +141,6 @@ clear_screen	ENDP
 ; Se não foi premida tecla, devolve ah=0 e al = 0
 ;********************************************************************************
 LE_TECLA_0	PROC
-
 	;	call 	Trata_Horas
 		MOV	AH,0BH
 		INT 	21h
@@ -147,6 +149,7 @@ LE_TECLA_0	PROC
 		mov	AH, 0
 		mov	AL, 0
 		jmp	SAI_TECLA
+		
 com_tecla:		
 		MOV	AH,08H
 		INT	21H
@@ -163,8 +166,7 @@ LE_TECLA_0	ENDP
 
 
 PASSA_TEMPO PROC	
- 
-		
+ 	
 		MOV AH, 2CH             ; Buscar a hORAS
 		INT 21H                 
 		
@@ -206,6 +208,8 @@ show_main_menu:
 	lea		dx, Menu
 	call	Imp_Fich
 
+main_wrong_input:
+
 	call 	get_menu_option
 
 	cmp		al, '1'
@@ -219,7 +223,8 @@ show_main_menu:
 	
 	cmp		al, '4'
 	je		fim
-	jmp		show_main_menu
+
+	jmp		main_wrong_input
 
 gameopts:
 
@@ -232,8 +237,9 @@ gameopts_wrong_input:
 
 	cmp		al, '1'
 	je 		classic_game
+
 	cmp		al, '2'
-	je		show_main_menu 		; Bonus Game
+	je		show_main_menu 				; Bonus Game
 
 	cmp 	al, '3'
 	je		show_main_menu
@@ -241,11 +247,21 @@ gameopts_wrong_input:
 	jmp		gameopts_wrong_input
 
 classic_game:
-	lea		dx,	ClassicGame
+	lea		dx,	cDifficulty
 	call	Imp_Fich
-	;call	move_snake
-	mov	ah,07h
-	int 21h
+
+	call 	get_menu_option
+
+	cmp		al,'3'
+	jg		gameopts
+
+	cmp		al, '1'
+	jb		gameopts
+
+	mov 	difficulty, al
+
+	call 	start_game
+
 	jmp		show_main_menu
 
 stats:
@@ -269,7 +285,6 @@ stats_wrong_input:
 
 	jmp		stats_wrong_input
 
-
 madeby:
 
 	lea 	dx, Credits
@@ -284,7 +299,7 @@ menu_controller endp
 
 get_menu_option PROC
 	mov			POSX, 21
-	mov			POSY, 22
+	mov			POSY, 20
 	goto_xy		POSx,POSy	; Vai para posição do cursor
 	
 	; mov			ah, 02h
@@ -302,10 +317,6 @@ get_menu_option PROC
 get_menu_option endp
 
 move_snake PROC
-		call 		CalcAleat
-		mov			POSx, 10
-		call		CalcAleat
-		mov			POSY, 10
 CICLO:	
 		goto_xy		POSx,POSy		; Vai para nova possição
 		mov 		ah, 08h			; Guarda o Caracter que está na posição do Cursor
@@ -461,7 +472,7 @@ CalcAleat proc near
 	int		1ah
 
 	add		dx,ultimo_num_aleat	; vai buscar o aleat�rio anterior
-	add		cx,dx	
+	add		cx,dx
 	mov		ax,65521
 	push	dx
 	mul		cx			
@@ -481,6 +492,36 @@ CalcAleat proc near
 	ret
 
 CalcAleat endp
+
+random_numbs proc
+	call 	CalcAleat
+	mov		ax, ultimo_num_aleat   	; ax = n. alea
+	mov		bl, 62					; bl = 62
+	mul		bl						; ax = al * bl
+	mov		bx, 255					; bx = 255
+	div		bx						; ax = ax / bx
+	add		ax, 4					; ax += 4
+	mov		POSX, al
+	
+	call 	CalcAleat
+	xor 	ax, ax
+	mov		ax, ultimo_num_aleat
+	pop		ax
+	mov		POSY, 5
+random_numbs endp
+
+start_game proc
+	lea		dx, ClassicGame
+	call	Imp_Fich
+
+	call 	random_numbs
+	goto_xy POSX, POSY
+	
+	mov		ah, 07h
+	int 21h 
+
+	jmp fim
+start_game endp
 
 
 INICIO:
