@@ -1,22 +1,22 @@
-                                                                               
 
 
-     _____                                _   _                 _ _      
-    |  __ \                              | \ | |               | | |     
-    | |  | | __ _ _ __   __ _  ___ _ __  |  \| | ___   ___   __| | | ___ 
-    | |  | |/ _` | '_ \ / _` |/ _ \ '__| | . ` |/ _ \ / _ \ / _` | |/ _ \
-    | |__| | (_| | | | | (_| |  __/ |    | |\  | (_) | (_) | (_| | |  __/
-    |_____/ \__,_|_| |_|\__, |\___|_|    |_| \_|\___/ \___/ \__,_|_|\___|
-                         __/ |                                           
-                        |___/                                                                                                                           
+                  dMMMMb  .aMMMb  dMMMMb  .aMMMMP dMMMMMP dMMMMb 
+                 dMP VMP dMP"dMP dMP dMP dMP"    dMP     dMP.dMP 
+                dMP dMP dMMMMMP dMP dMP dMP MMP"dMMMP   dMMMMK"  
+               dMP.aMP dMP dMP dMP dMP dMP.dMP dMP     dMP"AMF   
+              dMMMMP" dMP dMP dMP dMP  VMMMP" dMMMMMP dMP dMP    
+                                                                 
+                  dMMMMb  .aMMMb  .aMMMb  dMMMMb  dMP     dMMMMMP 
+                 dMP dMP dMP"dMP dMP"dMP dMP VMP dMP     dMP      
+                dMP dMP dMP dMP dMP dMP dMP dMP dMP     dMMMP     
+               dMP dMP dMP.aMP dMP.aMP dMP.aMP dMP     dMP        
+              dMP dMP  VMMMP"  VMMMP" dMMMMP" dMMMMMP dMMMMMP     
 
-
-
+                               
                                 1 - New game
                                 2 - Show stats
                                 3 - Credits 
                                 4 - Exit
-
 
       Insert Option > 
 
