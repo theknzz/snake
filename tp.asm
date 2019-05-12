@@ -35,6 +35,8 @@ DADOS	SEGMENT PARA 'DATA'
 	resto			db		0
 
 	ultimo_num_aleat dw 	0
+
+	maca			db		0
 	
 
 DADOS	ENDS
@@ -251,16 +253,32 @@ classic_game:
 	call	Imp_Fich
 
 	call 	get_menu_option
+	cmp 	al , '1'
+	je 		slug
+	cmp 	al, '2'
+	je		hare
+	cmp		al, '3'
+	je		cheetah
+	jmp 	gameopts
 
 	cmp		al,'3'
 	jg		gameopts
 
 	cmp		al, '1'
 	jb		gameopts
+slug: 
+	mov factor, 100
+	jmp game_start
+hare:
+	mov factor, 50
+	jmp game_start
+cheetah:
+	mov factor, 25
+	jmp game_start
 
-	mov 	difficulty, al
-
+game_start:
 	call 	start_game
+
 
 	jmp		show_main_menu
 
@@ -318,13 +336,32 @@ get_menu_option endp
 
 move_snake PROC
 CICLO:	
-		goto_xy		POSx,POSy		; Vai para nova possição
-		mov 		ah, 08h			; Guarda o Caracter que está na posição do Cursor
-		mov			bh,0			; numero da página
-		int			10h			
-		cmp 		al, '#'			;  na posição do Cursor
-		je			fim
+	goto_xy		POSx,POSy		; Vai para nova possição
+	mov 		ah, 08h			; Guarda o Caracter que está na posição do Cursor
+	mov			bh,0			; numero da página
+	int			10h			
+	cmp 		al, '#'			;  na posição do Cursor
+	je			fim_jogo
+	cmp 		al, 'V'
+	je			maca_verde
+	cmp			al, 'M'
+	je 			maca_madura
+	cmp			al, 'R'
+	je			rato
+	jmp cont_ciclo
+maca_verde:
+	inc maca
+	jmp cont_ciclo
+maca_madura:
+	inc maca
+	inc maca
+	jmp cont_ciclo
+rato:
 
+
+cont_ciclo:
+		cmp maca, 0
+		ja dec_maca
 		goto_xy		POSxa,POSya		; Vai para a posição anterior do cursor
 		mov			ah, 02h
 		mov			dl, ' ' 		; Coloca ESPAÇO
@@ -336,7 +373,7 @@ CICLO:
 		mov			dl, ' '			;  Coloca ESPAÇO
 		int			21H	
 		dec 		POSxa
-		
+
 		goto_xy		POSx,POSy		; Vai para posição do cursor
 
 IMPRIME:	
@@ -363,22 +400,7 @@ LER_SETA:
 		cmp			ah, 1
 		je			ESTEND
 		CMP 		AL, 27			; ESCAPE
-		JE			FIM
-		CMP			AL, '1'
-		JNE			TESTE_2
-		MOV			FACTOR, 100
-TESTE_2:	
-		CMP			AL, '2'
-		JNE			TESTE_3
-		MOV			FACTOR, 50
-TESTE_3:	
-		CMP			AL, '3'
-		JNE			TESTE_4
-		MOV			FACTOR, 25
-TESTE_4:
-		CMP			AL, '4'
-		JNE			TESTE_END
-		MOV			FACTOR, 10
+		JE			fim_jogo
 TESTE_END:		
 		CALL		PASSA_TEMPO
 		mov			AX, PASSA_T_ant
@@ -441,10 +463,12 @@ DIREITA:
 		mov			direccao, 0	
 		jmp			CICLO
 
-fim:		
+fim_jogo:		
 		goto_xy		40,23
 		RET
-
+dec_maca:
+	dec maca
+	jmp imprime
 move_snake ENDP
 
 ;------------------------------------------------------
@@ -494,20 +518,24 @@ CalcAleat proc near
 CalcAleat endp
 
 random_numbs proc
-	call 	CalcAleat
-	mov		ax, ultimo_num_aleat   	; ax = n. alea
-	mov		bl, 62					; bl = 62
-	mul		bl						; ax = al * bl
-	mov		bx, 255					; bx = 255
-	div		bx						; ax = ax / bx
-	add		ax, 4					; ax += 4
-	mov		POSX, al
+	;call 	CalcAleat
+	;mov		ax, ultimo_num_aleat   	; ax = n. alea
+	;mov		bl, 31					; bl = 62
+	;mul		bl						; ax = al * bl
+	;mov		bl, 255					; bl = 255
+	;div		bl						; al = ax / bl
+	;add		al, 2					; al += 4
+	;mov bl, 2
+	;mul bl
+	;mov		POSX, al
 	
-	call 	CalcAleat
-	xor 	ax, ax
-	mov		ax, ultimo_num_aleat
-	pop		ax
-	mov		POSY, 5
+	;call 	CalcAleat
+	;xor 	ax, ax
+	;mov		ax, ultimo_num_aleat
+	;pop		ax
+	mov 	POSX, 10
+	mov		POSY, 6
+	ret
 random_numbs endp
 
 start_game proc
@@ -517,6 +545,8 @@ start_game proc
 	call 	random_numbs
 	goto_xy POSX, POSY
 	
+	call move_snake
+
 	mov		ah, 07h
 	int 21h 
 
