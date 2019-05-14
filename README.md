@@ -25,3 +25,6 @@
 - [ ] Gerar numero aleatorio (maça + rato + cabeça da cobra)
 - [ ] Verificar a rotina de *Delay* do prof
 - [ ] Criar rotinas de atualizar o mapa
+
+# Niveis
+- [ ] Diferenciar a velocidade e pontos dos niveis

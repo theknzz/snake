@@ -12,14 +12,15 @@
                dMP dMP dMP.aMP dMP.aMP dMP.aMP dMP     dMP        
               dMP dMP  VMMMP"  VMMMP" dMMMMP" dMMMMMP dMMMMMP     
 
-
-                o-----------------------------------------------o
-                |       1       |       2       |       3       |
-                |    Classic    |     Bonus     |  Back to menu |
-                o...............................................o
-
-      Insert Option > 
-
-                      
+                                                              
+                               < HOW TO PLAY >
+                               
+                        LEFT ARROW      to move LEFT         
+                        RIGHT ARROW     to move RIGHT
+                        DOWN ARROW      to move DOWN
+                        UP ARROW        to move UP
                                                                              
-                                                               
+                    Press any key to get back to main menu...
+                  
+                                       
+                                       

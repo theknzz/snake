@@ -4,6 +4,7 @@
 
 DADOS	SEGMENT PARA 'DATA'
 
+	; => Files in Memory
     Menu            db      './files/menu.txt',0
 	newgame			db		'./files/newGame.txt',0
 	ClassicGame		db		'./files/moldura.txt',0
@@ -12,11 +13,21 @@ DADOS	SEGMENT PARA 'DATA'
 	Credits			db		'./files/credits.txt',0
 	GameOver		db		'./files/gameOver.txt',0
 	GameWon			db		'./files/gameWon.txt',0
-    Erro_Open       db      '0-Erro ao tentar abrir o ficheiro$'
-    Erro_Ler_Msg    db      '1-Erro ao tentar ler do ficheiro$'
-    Erro_Close      db      '2-Erro ao tentar fechar o ficheiro$'
+	TutorialFile	db 		'./files/tutorial.txt',0
+    ; <= Ficheiros em Memória
+
+	; => File Handles
+	Erro_Open       db      'Erro ao tentar abrir o ficheiro$'
+    Erro_Ler_Msg    db      'Erro ao tentar ler do ficheiro$'
+    Erro_Close      db      'Erro ao tentar fechar o ficheiro$'
     HandleFich      dw      0
     car_fich        db      ?
+	; <= File Handles
+
+	; => Handles
+	pontos			db		0
+	str_aux			db		10 dup(?)
+	; <= Handles
 
 	difficulty		db		?
 
@@ -24,6 +35,9 @@ DADOS	SEGMENT PARA 'DATA'
 	POSx			db		40	; POSx pode ir [1..80]	
 	POSya			db		5	; Posição anterior de y
 	POSxa			db		10	; Posição anterior de x
+	POSxPont		db		30
+	POSyPont		db		23
+	
 
 	PASSA_T			dw		0
 	PASSA_T_ant		dw		0
@@ -37,7 +51,6 @@ DADOS	SEGMENT PARA 'DATA'
 	ultimo_num_aleat dw 	0
 
 	maca			db		0
-	
 
 DADOS	ENDS
 
@@ -144,23 +157,23 @@ clear_screen	ENDP
 ;********************************************************************************
 LE_TECLA_0	PROC
 	;	call 	Trata_Horas
-		MOV	AH,0BH
+		MOV		AH,0BH
 		INT 	21h
 		cmp 	AL,0
-		jne	com_tecla
-		mov	AH, 0
-		mov	AL, 0
-		jmp	SAI_TECLA
+		jne		com_tecla
+		mov		AH, 0
+		mov		AL, 0
+		jmp		SAI_TECLA
 		
 com_tecla:		
-		MOV	AH,08H
-		INT	21H
-		MOV	AH,0
-		CMP	AL,0
-		JNE	SAI_TECLA
-		MOV	AH, 08H
-		INT	21H
-		MOV	AH,1
+		MOV		AH,08H
+		INT		21H
+		MOV		AH,0
+		CMP		AL,0
+		JNE		SAI_TECLA
+		MOV		AH, 08H
+		INT		21H
+		MOV		AH,1
 SAI_TECLA:	
 		RET
 LE_TECLA_0	ENDP
@@ -204,7 +217,8 @@ PASSA_TEMPO   ENDP
 
 
 menu_controller PROC
-
+	xor		ax,	ax
+	xor		dx,	dx
 show_main_menu:
 
 	lea		dx, Menu
@@ -213,6 +227,9 @@ show_main_menu:
 main_wrong_input:
 
 	call 	get_menu_option
+
+	cmp		al, '0'
+	je		tutorial
 
 	cmp		al, '1'
 	je		gameopts
@@ -227,6 +244,14 @@ main_wrong_input:
 	je		fim
 
 	jmp		main_wrong_input
+
+tutorial:
+	lea		dx,	TutorialFile
+	call	Imp_Fich
+
+	mov		ah,	07h
+	int		21h
+	jmp		show_main_menu
 
 gameopts:
 
@@ -335,12 +360,13 @@ get_menu_option PROC
 get_menu_option endp
 
 move_snake PROC
-CICLO:	
-	goto_xy		POSx,POSy		; Vai para nova possição
-	mov 		ah, 08h			; Guarda o Caracter que está na posição do Cursor
-	mov			bh,0			; numero da página
+CICLO:
+	call		mostra_pontuacao 	; Mostra prontuação
+	goto_xy		POSx,POSy			; Vai para nova possição
+	mov 		ah, 08h				; Guarda o Caracter que está na posição do Cursor
+	mov			bh,0				; numero da página
 	int			10h			
-	cmp 		al, '#'			;  na posição do Cursor
+	cmp 		al, '#'				;  na posição do Cursor
 	je			fim_jogo
 	cmp 		al, 'V'
 	je			maca_verde
@@ -353,15 +379,17 @@ maca_verde:
 	inc maca
 	jmp cont_ciclo
 maca_madura:
-	inc maca
-	inc maca
+	add maca, 2
 	jmp cont_ciclo
 rato:
 
 
 cont_ciclo:
-		cmp maca, 0
+		cmp maca, 0					; @Andre pq que fazes esta verificação ?
 		ja dec_maca
+
+	;; Limpar o rasto da cabeça da cobra
+
 		goto_xy		POSxa,POSya		; Vai para a posição anterior do cursor
 		mov			ah, 02h
 		mov			dl, ' ' 		; Coloca ESPAÇO
@@ -376,7 +404,10 @@ cont_ciclo:
 
 		goto_xy		POSx,POSy		; Vai para posição do cursor
 
-IMPRIME:	
+IMPRIME:
+
+	;; Atualizar a cabeça da cobra
+
 		mov			ah, 02h
 		mov			dl, '('			; Coloca AVATAR1
 		int			21H
@@ -464,13 +495,36 @@ DIREITA:
 		jmp			CICLO
 
 fim_jogo:		
-		goto_xy		40,23
+		call		clear_screen
+		call		menu_controller
 		RET
+
 dec_maca:
-	dec maca
-	jmp imprime
+		dec 		maca
+		jmp 		imprime
+
 move_snake ENDP
 
+
+; :::::::::::::::::: Mostra Pontuação ::::::::::::::::::
+mostra_pontuacao proc
+	goto_xy		POSxPont,	POSyPont 	; vai para a posição da pontuação
+	xor			dx,	dx
+	mov			dl, pontos
+	mov			str_aux[0],	dl    	 	; passar o nr para a string aux
+	mov			str_aux[1], '$'			; pq a interrupcao procura o fim da string pelo $
+	;mostra		str_aux					; syntax error ?
+	goto_xy 	POSX, POSY				; volta para a posição antiga
+mostra_pontuacao endp
+; :::::::::::::::::: Mostra Pontuação ::::::::::::::::::
+
+; macro para imprimir uma string no stdout
+; params - recebe a string que vai imprimir
+mostra MACRO str
+	lea		dx,	str
+	mov		ah, 09h
+	int		21h	
+endm
 ;------------------------------------------------------
 ;CalcAleat - calcula um numero aleatorio de 16 bits
 ;Parametros passados pela pilha
@@ -561,8 +615,6 @@ INICIO:
 	MOV			ES,AX			; (?)	; ES indica segmento de memória de VIDEO
 	CALL 		clear_screen
 	call		menu_controller
-
-
 
 fim:	mov     ah,4ch
 	int     21h

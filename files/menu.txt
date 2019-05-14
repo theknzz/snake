@@ -12,11 +12,11 @@
                dMP dMP dMP.aMP dMP.aMP dMP.aMP dMP     dMP        
               dMP dMP  VMMMP"  VMMMP" dMMMMP" dMMMMMP dMMMMMP     
 
-                               
-                                1 - New game
-                                2 - Show stats
-                                3 - Credits 
-                                4 - Exit
+
+      o---------------------------------------------------------------o
+      |      0       |     1      |       2       |     3     |   4   |
+      | How to play? |  New game  |   Show stats  |  Credits  |  Exit |
+      o---------------------------------------------------------------o
 
       Insert Option > 
 

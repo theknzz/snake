@@ -13,13 +13,12 @@
               dMP dMP  VMMMP"  VMMMP" dMMMMP" dMMMMMP dMMMMMP     
 
 
-                                1 - Slug
-                                2 - Hare
-                                3 - Cheetah
-                                4 - Back to menu
+                    o-------------------------------------o
+                    |   1   |    2   |     3     |    4   |
+                    | Slug  |  Hare  |  Cheetah  |  Back  |
+                    o-------------------------------------o
 
       Insert Option > 
-
 
 
 
