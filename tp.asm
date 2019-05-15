@@ -251,7 +251,7 @@ show_main_menu:
 		jmp		show_main_menu
 
 tutorial:
-		lea		dx,	TutorialFile		
+		lea		dx,	TutorialFile
 		call	Imp_Fich				; imprime o ficheiro corresponde ao tutorial
 		call	get_menu_option
 		jmp		show_main_menu          ; volta ao menu principal
