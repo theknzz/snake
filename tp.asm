@@ -4,54 +4,57 @@
 
 DADOS	SEGMENT PARA 'DATA'
 
-	; => Files in Memory
-    Menu            db      './files/menu.txt',0
-	newgame			db		'./files/newGame.txt',0
-	ClassicGame		db		'./files/moldura.txt',0
-	cDifficulty		db		'./files/choose.txt',0
-	ShowStats		db		'./files/stats.txt',0
-	Credits			db		'./files/credits.txt',0
-	GameOver		db		'./files/gameOver.txt',0
-	GameWon			db		'./files/gameWon.txt',0
-	TutorialFile	db 		'./files/tutorial.txt',0
-    ; <= Ficheiros em Memória
+	; :::::::::::::::::: Files in Memory ::::::::::::::::::
+		Menu            db      './files/menu.txt',0
+		newgame			db		'./files/newGame.txt',0
+		ClassicGame		db		'./files/moldura.txt',0
+		cDifficulty		db		'./files/choose.txt',0
+		ShowStats		db		'./files/stats.txt',0
+		Credits			db		'./files/credits.txt',0
+		GameOver		db		'./files/gameOver.txt',0
+		GameWon			db		'./files/gameWon.txt',0
+		TutorialFile	db 		'./files/tutorial.txt',0
+    ; :::::::::::::::::: Ficheiros em Memória ::::::::::::::::::
 
-	; => File Handles
-	Erro_Open       db      'Erro ao tentar abrir o ficheiro$'
-    Erro_Ler_Msg    db      'Erro ao tentar ler do ficheiro$'
-    Erro_Close      db      'Erro ao tentar fechar o ficheiro$'
-    HandleFich      dw      0
-    car_fich        db      ?
-	; <= File Handles
+	; :::::::::::::::::: File Handles ::::::::::::::::::
+		Erro_Open       db      'Erro ao tentar abrir o ficheiro$'
+		Erro_Ler_Msg    db      'Erro ao tentar ler do ficheiro$'
+		Erro_Close      db      'Erro ao tentar fechar o ficheiro$'
+		HandleFich      dw      0
+		car_fich        db      ?
+	; :::::::::::::::::: File Handles ::::::::::::::::::
 
-	; => Handles
-	pontos			db		0
-	str_aux			db		10 dup(?)
-	; <= Handles
+	; :::::::::::::::::: Handles ::::::::::::::::::
+		pontos			db		0
+		str_aux			db		10 dup(?)
+	; :::::::::::::::::: Handles ::::::::::::::::::
 
-	difficulty		db		?
+	; :::::::::::::::::: Warnings ::::::::::::::::::
+		Erro_Input		db		'WARNING: Input invalido (Press any key to continue...) $'
+	; :::::::::::::::::: Warnings ::::::::::::::::::
 
-	POSy			db		10	; a linha pode ir de [1 .. 25]
-	POSx			db		40	; POSx pode ir [1..80]	
-	POSya			db		5	; Posição anterior de y
-	POSxa			db		10	; Posição anterior de x
-	POSxPont		db		30
-	POSyPont		db		23
-	
+		difficulty		db		?
 
-	PASSA_T			dw		0
-	PASSA_T_ant		dw		0
-	direccao		db		3
-	
-	Centesimos		dw 		0
-	FACTOR			db		100
-	metade_FACTOR	db		?
-	resto			db		0
+		POSy			db		10	; a linha pode ir de [1 .. 25]
+		POSx			db		40	; POSx pode ir [1..80]	
+		POSya			db		5	; Posição anterior de y
+		POSxa			db		10	; Posição anterior de x
+		POSxPont		db		30
+		POSyPont		db		23
+		
 
-	ultimo_num_aleat dw 	0
+		PASSA_T			dw		0
+		PASSA_T_ant		dw		0
+		direccao		db		3
+		
+		Centesimos		dw 		0
+		FACTOR			db		100
+		metade_FACTOR	db		?
+		resto			db		0
 
-	maca			db		0
+		ultimo_num_aleat dw 	0
 
+		maca			db		0
 DADOS	ENDS
 
 CODIGO	SEGMENT PARA 'CODE'
@@ -70,13 +73,13 @@ GOTO_XY		MACRO	POSX,POSY
 ENDM
 
 
-
+; :::::::::::::::::: Imprimir Ficheiro para STDOUT ::::::::::::::::::
+; author: Professor
 Imp_Fich	PROC
 ;abre ficheiro
 		call 	clear_screen
         mov     ah,3dh			; vamos abrir ficheiro para leitura 
-        mov     al,0			; tipo de ficheiro	
-        ;lea     dx, Menu		; nome do ficheiro
+        mov     al,0			; tipo de ficheiro
         int     21h				; abre para leitura 
         jc      erro_abrir		; pode aconter erro a abrir o ficheiro 
         mov     HandleFich,ax	; ax devolve o Handle para o ficheiro 
@@ -118,9 +121,10 @@ fecha_ficheiro:					; vamos fechar o ficheiro
         Int     21h
 sai:	  RET
 Imp_Fich	endp
+; :::::::::::::::::: Imprimir Ficheiro para STDOUT ::::::::::::::::::
 
-
-;ROTINA PARA APAGAR ECRAN
+; :::::::::::::::::: ROTINA PARA APAGAR ECRAN ::::::::::::::::::
+; author: Professor
 clear_screen	PROC
 		PUSH BX
 		PUSH AX
@@ -144,7 +148,7 @@ clear:
 		POP BX
 		RET
 clear_screen	ENDP
-
+; :::::::::::::::::: ROTINA PARA APAGAR ECRAN ::::::::::::::::::
 
 
 ;********************************************************************************
@@ -179,7 +183,8 @@ SAI_TECLA:
 LE_TECLA_0	ENDP
 
 
-
+; :::::::::::::::::: Passa Tempo ::::::::::::::::::
+; author: Professor
 PASSA_TEMPO PROC	
  	
 		MOV AH, 2CH             ; Buscar a hORAS
@@ -214,155 +219,153 @@ fim_passa:
 
  		RET 
 PASSA_TEMPO   ENDP 
+; :::::::::::::::::: Passa Tempo ::::::::::::::::::
 
-
+; :::::::::::::::::: Controlador do Menu ::::::::::::::::::
 menu_controller PROC
 	xor		ax,	ax
 	xor		dx,	dx
+
 show_main_menu:
+		lea		dx, Menu
+		call	Imp_Fich
 
-	lea		dx, Menu
-	call	Imp_Fich
+		call 	get_menu_option
 
-main_wrong_input:
+		cmp		al, '0'
+		je		tutorial
 
-	call 	get_menu_option
+		cmp		al, '1'
+		je		gameopts
+		
+		cmp 	al, '2'
+		je 		stats
+		
+		cmp 	al, '3'
+		je 		madeby
+		
+		cmp		al, '4'
+		je		fim
 
-	cmp		al, '0'
-	je		tutorial
-
-	cmp		al, '1'
-	je		gameopts
-	
-	cmp 	al, '2'
-	je 		stats
-	
-	cmp 	al, '3'
-	je 		madeby
-	
-	cmp		al, '4'
-	je		fim
-
-	jmp		main_wrong_input
+		call	wrong_input
+		jmp		show_main_menu
 
 tutorial:
-	lea		dx,	TutorialFile
-	call	Imp_Fich
-
-	mov		ah,	07h
-	int		21h
-	jmp		show_main_menu
+		lea		dx,	TutorialFile		
+		call	Imp_Fich				; imprime o ficheiro corresponde ao tutorial
+		call	get_menu_option
+		jmp		show_main_menu          ; volta ao menu principal
 
 gameopts:
+		lea		dx,	newGame				; imprime o ficheiro corresponde ao menu de jogo
+		call	Imp_Fich
 
-	lea		dx,	newGame
-	call	Imp_Fich
+	gameopts_wrong_input:
 
-gameopts_wrong_input:
+		call 	get_menu_option			; Lê opção inserida pelo jogador
 
-	call 	get_menu_option
+		cmp		al, '1'
+		je 		classic_game
 
-	cmp		al, '1'
-	je 		classic_game
+		cmp		al, '2'
+		je		show_main_menu 			; Bonus Game
 
-	cmp		al, '2'
-	je		show_main_menu 				; Bonus Game
-
-	cmp 	al, '3'
-	je		show_main_menu
-
-	jmp		gameopts_wrong_input
+		cmp 	al, '3'
+		je		show_main_menu
+ 
+		call 	wrong_input
+		jmp		gameopts
 
 classic_game:
-	lea		dx,	cDifficulty
+	lea		dx,	cDifficulty			; imprime o ficheiro corresponde à escolha da dificuldade
 	call	Imp_Fich
 
-	call 	get_menu_option
+	call 	get_menu_option			; le opcao do jogador
+
 	cmp 	al , '1'
 	je 		slug
+
 	cmp 	al, '2'
 	je		hare
+
 	cmp		al, '3'
 	je		cheetah
-	jmp 	gameopts
 
-	cmp		al,'3'
-	jg		gameopts
+	cmp		al,	'4'
+	je		gameopts
 
-	cmp		al, '1'
-	jb		gameopts
-slug: 
-	mov factor, 100
-	jmp game_start
-hare:
-	mov factor, 50
-	jmp game_start
-cheetah:
-	mov factor, 25
-	jmp game_start
+	call	wrong_input
+	jmp		classic_game
 
-game_start:
-	call 	start_game
+	slug: 
+		mov factor, 100
+		jmp game_start
 
+	hare:
+		mov factor, 50
+		jmp game_start
 
-	jmp		show_main_menu
+	cheetah:
+		mov factor, 25
+		jmp game_start
+
+	game_start:
+		call 	start_game
+		jmp		show_main_menu
 
 stats:
-	lea		dx, ShowStats
-	call	Imp_Fich
+		lea		dx, ShowStats
+		call	Imp_Fich
 
-stats_wrong_input:
+		call 	get_menu_option
 
-	call 	get_menu_option
+		; Game History
+		cmp		al, '1'
+		jmp 	show_main_menu
 
-	; Game History
-	cmp		al, '1'
-	jmp 	show_main_menu
+		; Statistical Values
+		cmp		al, '2'
+		jmp		show_main_menu
 
-	; Statistical Values
-	cmp		al, '2'
-	jmp		show_main_menu
+		cmp		al, '3'
+		jmp 	show_main_menu
 
-	cmp		al, '3'
-	jmp 	show_main_menu
-
-	jmp		stats_wrong_input
+		call	wrong_input
+		jmp		stats
 
 madeby:
+		lea 	dx, Credits
+		call	Imp_Fich
 
-	lea 	dx, Credits
-	call	Imp_Fich
-
-	mov		ah, 07h
-	int 	21h
-	jmp		show_main_menu
+		mov		ah, 07h
+		int 	21h
+		jmp		show_main_menu
 
 
 menu_controller endp
+; :::::::::::::::::: Controlador do Menu ::::::::::::::::::
 
+; :::::::::::::::::: Obter Opção ::::::::::::::::::
 get_menu_option PROC
-	mov			POSX, 21
-	mov			POSY, 20
-	goto_xy		POSx,POSy	; Vai para posição do cursor
-	
-	; mov			ah, 02h
-	; mov			dx, '>'	
-	; int			21h
-	
-	; inc 		POSX
-	; goto_xy 	POSX, POSY
-
+	goto_xy		21, 20			; Vai para posição do cursor
 	mov			ah,	07h
 	int			21h
-
+	cmp			al, 1Bh			; ESC - Fast Ending
+	je			close
 	ret
 
-get_menu_option endp
+close:
+	call		clear_screen
+	jmp			fim
 
+get_menu_option endp
+; :::::::::::::::::: Obter Opção ::::::::::::::::::
+
+; :::::::::::::::::: Movimento da Cobra ::::::::::::::::::
 move_snake PROC
 CICLO:
-	call		mostra_pontuacao 	; Mostra prontuação
-	goto_xy		POSx,POSy			; Vai para nova possição
+	;call		mostra_pontuacao 	; Mostra prontuação
+	;goto_xy		POSx,POSy			; Vai para nova possição
 	mov 		ah, 08h				; Guarda o Caracter que está na posição do Cursor
 	mov			bh,0				; numero da página
 	int			10h			
@@ -504,7 +507,7 @@ dec_maca:
 		jmp 		imprime
 
 move_snake ENDP
-
+; :::::::::::::::::: Movimento da Cobra ::::::::::::::::::
 
 ; :::::::::::::::::: Mostra Pontuação ::::::::::::::::::
 mostra_pontuacao proc
@@ -512,12 +515,13 @@ mostra_pontuacao proc
 	xor			dx,	dx
 	mov			dl, pontos
 	mov			str_aux[0],	dl    	 	; passar o nr para a string aux
-	mov			str_aux[1], '$'			; pq a interrupcao procura o fim da string pelo $
+	mov			str_aux[1], '$'			; pq a interrupcao procura o fim da string pelo '$'
 	;mostra		str_aux					; syntax error ?
 	goto_xy 	POSX, POSY				; volta para a posição antiga
 mostra_pontuacao endp
 ; :::::::::::::::::: Mostra Pontuação ::::::::::::::::::
 
+; :::::::::::::::::: MACRO Imprime String ::::::::::::::::::
 ; macro para imprimir uma string no stdout
 ; params - recebe a string que vai imprimir
 mostra MACRO str
@@ -525,14 +529,30 @@ mostra MACRO str
 	mov		ah, 09h
 	int		21h	
 endm
-;------------------------------------------------------
-;CalcAleat - calcula um numero aleatorio de 16 bits
-;Parametros passados pela pilha
-;entrada:
-;n�o tem parametros de entrada
-;saida:
-;param1 - 16 bits - numero aleatorio calculado
-;notas adicionais:
+; :::::::::::::::::: MACRO Imprime String ::::::::::::::::::
+
+; :::::::::::::::::: Imprime avisos de wrong input ::::::::::::::::::
+wrong_input proc
+		goto_xy 14,22			; Vai para a posição de aviso
+        mov     ah,09h
+        lea     dx,Erro_Input	; coloca a mensagem de erro no registo necessário
+        int     21h				; chama a int para imprimir no stdout
+		goto_xy	posx, posy		; volta para a posição antiga do cursor
+		call 	get_menu_option
+		call	clear_screen
+		ret
+wrong_input endp
+; :::::::::::::::::: Imprime avisos de wrong input ::::::::::::::::::
+
+; :::::::::::::::::: Calcula Aleatorio ::::::::::::::::::
+; author: Professor
+; CalcAleat - calcula um numero aleatorio de 16 bits
+; Parametros passados pela pilha
+; entrada:
+; n�o tem parametros de entrada
+; saida:
+; param1 - 16 bits - numero aleatorio calculado
+; notas adicionais:
 ; deve estar definida uma variavel => ultimo_num_aleat dw 0
 ; assume-se que DS esta a apontar para o segmento onde esta armazenada ultimo_num_aleat
 CalcAleat proc near
@@ -570,7 +590,9 @@ CalcAleat proc near
 	ret
 
 CalcAleat endp
+; :::::::::::::::::: Calcula Aleatorio ::::::::::::::::::
 
+; :::::::::::::::::: Gera Numero Aleatório ::::::::::::::::::
 random_numbs proc
 	;call 	CalcAleat
 	;mov		ax, ultimo_num_aleat   	; ax = n. alea
@@ -591,7 +613,9 @@ random_numbs proc
 	mov		POSY, 6
 	ret
 random_numbs endp
+; :::::::::::::::::: Gera Numero Aleatório ::::::::::::::::::
 
+; :::::::::::::::::: Start Game ::::::::::::::::::
 start_game proc
 	lea		dx, ClassicGame
 	call	Imp_Fich
@@ -599,14 +623,14 @@ start_game proc
 	call 	random_numbs
 	goto_xy POSX, POSY
 	
-	call move_snake
+	call 	move_snake
 
 	mov		ah, 07h
 	int 21h 
 
 	jmp fim
 start_game endp
-
+; :::::::::::::::::: Start Game ::::::::::::::::::
 
 INICIO:
 	mov     	ax, DADOS
