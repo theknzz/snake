@@ -19,7 +19,7 @@
 - [ ] GameWon
 
 # UI
-- [ ] Mensagens de inputs incorretos (?)
+- [x] Mensagens de inputs incorretos (?)
 
 # Utils
 - [ ] Gerar numero aleatorio (maça + rato + cabeça da cobra)
@@ -27,4 +27,4 @@
 - [ ] Criar rotinas de atualizar o mapa
 
 # Niveis
-- [ ] Diferenciar a velocidade e pontos dos niveis
+- [x] Diferenciar a velocidade e pontos dos niveis
