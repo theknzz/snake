@@ -410,7 +410,7 @@ maca_verde:
 
 maca_madura:
 	call 	add_apple
-	jmp		game_over
+	call	clear_screen
 	inc	 	maca
 	inc	 	maca
 	jmp 	cont_ciclo
@@ -419,8 +419,8 @@ rato:
 
 
 cont_ciclo:
-		;cmp maca, 0					; @Andre pq que fazes esta verificação ?
-		;ja dec_maca
+		cmp maca, 0					; @Andre pq que fazes esta verificação ?
+		ja dec_maca
 
 	;; Limpar o rasto da cabeça da cobra
 
@@ -429,14 +429,14 @@ cont_ciclo:
 		mov			ah, 02h
 		mov			dl, ' ' 		; Coloca ESPAÇO
 		int			21H
-		mov ah, tail_x
-		mov posxa, ah
+		mov 		ah, tail_x
+		mov 		posxa, ah
 		inc			POSxa
 		goto_xy		POSxa,tail_y	
 		mov			ah, 02h
 		mov			dl, ' '			;  Coloca ESPAÇO
 		int			21H	
-		call move_tail
+		call 		move_tail
 		goto_xy		head_x,head_y		; Vai para posição do cursor
 
 
@@ -675,23 +675,19 @@ CalcAleat endp
 ; param : recebe em dl um aleatorio de 8 bits
 ; NOTA: devolve sempre a mini celula da esquerda
 valid_Xcoord proc
+
 	mov		dx,	ultimo_num_aleat
 	xor 	ax,	ax
 	xor		bx, bx
 	xor		cx, cx
-	cmp		dh, 33
-	jge		invalid
-	cmp		dh, 2
-	jb		invalid
-	ret
 
-invalid:
 	mov		al, dh
-	mov		cl, 33
+	mov		cl, 60
 	mul		cl
 	mov		cl, 255
 	div		cl
-	add		al, 2 			; garantir que o nr e superior a 2
+	add		al, 4	 			; garantir que o nr e superior a 2
+
 	mov		posx, al
 	ret
 valid_Xcoord endp
@@ -705,19 +701,23 @@ valid_Ycoord proc
 	xor		ax,	ax
 	xor		bx, bx
 	xor 	cx, cx
-	cmp		dl, 22
+	cmp		dl, 20			
 	jge		invalid_0
 	cmp		dl, 2
-	jb		invalid_0
+	jb		invalid_2
 	ret
 invalid_0:
 	mov		al, dl
-	mov		cl, 22
+	mov		cl, 20
 	mul		cl
 	mov		cl, 255
 	div		cl
-	add		al, 2
+	add		al, 5
 	mov		posy, al
+	jmp		valid_fim
+invalid_2:
+	add		al, 4
+valid_fim:
 	ret
 valid_Ycoord endp
 ; :::::::::::::::::: Gera Coordenada de Y válida ::::::::::::::::::
@@ -725,22 +725,16 @@ valid_Ycoord endp
 ; :::::::::::::::::: Adiciona Macas ::::::::::::::::::
 ; aleatoriamente adiciona uma maca numa posicao aleatoria
 add_apple proc
-	; xor		ax,	ax
-	; mov		al,	posx 				; guarda a posicao atual do cursor
-	; mov		POSxa, al
-	; mov		al, posy
-	; mov		posya, al
-
 	xor		ax, ax
 	xor		dx,	dx
 	xor		bx, bx
 	xor		cx, cx
 
 	call 	CalcAleat				; senao gera um numero aleatorio
-	mov		cx, ultimo_num_aleat	; desprezamos 8 bits desse numero gerado
+	mov		cx, ultimo_num_aleat	
 	mov		bl, 2
-	mov		al, cl
-	div		bl						; dividimos por 2 para saber se o numero e para ou impar
+	mov		al, cl					; desprezamos 8 bits desse numero gerado
+	div		bl						; dividimos por 2 para saber se o numero e par ou impar
 	
 	cmp		ah, 0					
 	je		add_macaVerde			; se for para adicionamos uma maca verde 'V'
@@ -764,7 +758,7 @@ add_apple proc
 	mov		dl, 'M'
 	int 	21h
 	dec		posx
-	jmp		cursoBackToPlace		; voltar a colocar o cursor na posicao antiga
+	jmp		fim_addApple			; voltar a colocar o cursor na posicao antiga
 
 add_macaVerde:
 	call	CalcAleat
@@ -784,23 +778,11 @@ add_macaVerde:
 	mov		dl, 'V'
 	int		21h
 	dec 	posx
-	
-cursoBackToPlace:
-	xor 	ax, ax
-	mov		al, POSxa
-	mov		posx, al
-	mov		al,	posya
-	mov		posy, al
-	goto_xy	posxa, posya
 
 fim_addApple:
 	ret
 add_apple endp
 ; :::::::::::::::::: Adiciona Macas ::::::::::::::::::
-
-
-
-
 
 ; :::::::::::::::::: Start Game ::::::::::::::::::
 start_game proc
@@ -814,13 +796,13 @@ start_game proc
 	call	CalcAleat
 	call	valid_Ycoord
 
-	mov ah, posx
-	mov al, posy
-	mov head_x, ah
-	mov head_y, al
-	dec al
-	mov tail_x, ah
-	mov tail_y, al
+	mov 	ah, posx
+	mov 	al, posy
+	mov 	head_x, ah
+	mov 	head_y, al
+	dec 	al
+	mov 	tail_x, ah
+	mov 	tail_y, al
 	mov  	tam, 0
 	
 	call 	move_snake
