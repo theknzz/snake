@@ -12,7 +12,7 @@ DADOS	SEGMENT PARA 'DATA'
 		ShowStats		db		'./files/stats.txt',0
 		Credits			db		'./files/credits.txt',0
 		GameOver		db		'./files/gameOver.txt',0
-		GameWon			db		'./files/gameWon.txt',0
+		AreUSure		db		'./files/YouSure.txt',0
 		TutorialFile	db 		'./files/tutorial.txt',0
     ; :::::::::::::::::: Ficheiros em Memória ::::::::::::::::::
 
@@ -33,7 +33,14 @@ DADOS	SEGMENT PARA 'DATA'
 		Erro_Input		db		'WARNING: Input invalido (Press any key to continue...) $'
 	; :::::::::::::::::: Warnings ::::::::::::::::::
 
-		difficulty		db		?
+	; :::::::::::::::::: Cobra Utils ::::::::::::::::::
+		tam				db 		1
+		cobra			dw		20 dup($) ; Ah - eixo x & Al - eixo y
+		head			dw		?	; AH - x cord / AL - y cord
+		tail 			dw		?	; AH - x cord / AL - y cord
+	; :::::::::::::::::: Cobra Utils ::::::::::::::::::
+
+		difficulty		db		? 	; (?)
 
 		POSy			db		10	; a linha pode ir de [1 .. 25]
 		POSx			db		40	; POSx pode ir [1..80]	
@@ -53,7 +60,6 @@ DADOS	SEGMENT PARA 'DATA'
 		resto			db		0
 
 		ultimo_num_aleat dw 	0
-
 		maca			db		0
 DADOS	ENDS
 
@@ -78,12 +84,12 @@ ENDM
 Imp_Fich	PROC
 ;abre ficheiro
 		call 	clear_screen
-        mov     ah,3dh			; vamos abrir ficheiro para leitura 
-        mov     al,0			; tipo de ficheiro
-        int     21h				; abre para leitura 
-        jc      erro_abrir		; pode aconter erro a abrir o ficheiro 
-        mov     HandleFich,ax	; ax devolve o Handle para o ficheiro 
-        jmp     ler_ciclo		; depois de abero vamos ler o ficheiro 
+        mov     ah,3dh				; vamos abrir ficheiro para leitura 
+        mov     al,0				; tipo de ficheiro
+        int     21h					; abre para leitura 
+        jc      erro_abrir			; pode aconter erro a abrir o ficheiro 
+        mov     HandleFich,ax		; ax devolve o Handle para o ficheiro 
+        jmp     ler_ciclo			; depois de abero vamos ler o ficheiro 
 
 erro_abrir:
         mov     ah,09h
@@ -92,15 +98,15 @@ erro_abrir:
         jmp     sai
 
 ler_ciclo:
-        mov     ah,3fh			; indica que vai ser lido um ficheiro 
-        mov     bx,HandleFich	; bx deve conter o Handle do ficheiro previamente aberto 
-        mov     cx,1			; numero de bytes a ler 
-        lea     dx,car_fich		; vai ler para o local de memoria apontado por dx (car_fich)
-        int     21h				; faz efectivamente a leitura
+        mov     ah,3fh				; indica que vai ser lido um ficheiro 
+        mov     bx,HandleFich		; bx deve conter o Handle do ficheiro previamente aberto 
+        mov     cx,1				; numero de bytes a ler 
+        lea     dx,car_fich			; vai ler para o local de memoria apontado por dx (car_fich)
+        int     21h					; faz efectivamente a leitura
 	    jc	    erro_ler			; se carry é porque aconteceu um erro
 	    cmp	    ax,0				; EOF?	verifica se já estamos no fim do ficheiro 
 	    je	    fecha_ficheiro		; se EOF fecha o ficheiro 
-        mov     ah,02h			; coloca o caracter no ecran
+        mov     ah,02h				; coloca o caracter no ecran
 	    mov	    dl,car_fich			; este é o caracter a enviar para o ecran
 	    int	    21h					; imprime no ecran
 	    jmp	    ler_ciclo			; continua a ler o ficheiro
@@ -341,6 +347,16 @@ madeby:
 		int 	21h
 		jmp		show_main_menu
 
+game_over:
+		lea			dx,	gameOver
+		call		Imp_Fich
+
+		call		get_menu_option
+		cmp			al, '1'
+		je			classic_game
+		cmp			al, '2'
+		je			fim
+
 
 menu_controller endp
 ; :::::::::::::::::: Controlador do Menu ::::::::::::::::::
@@ -365,10 +381,11 @@ get_menu_option endp
 move_snake PROC
 CICLO:
 	;call		mostra_pontuacao 	; Mostra prontuação
-	;goto_xy		POSx,POSy			; Vai para nova possição
+	goto_xy		POSx,POSy			; Vai para nova possição
 	mov 		ah, 08h				; Guarda o Caracter que está na posição do Cursor
 	mov			bh,0				; numero da página
-	int			10h			
+	int			10h
+
 	cmp 		al, '#'				;  na posição do Cursor
 	je			fim_jogo
 	cmp 		al, 'V'
@@ -378,12 +395,15 @@ CICLO:
 	cmp			al, 'R'
 	je			rato
 	jmp cont_ciclo
+
 maca_verde:
 	inc maca
 	jmp cont_ciclo
+
 maca_madura:
 	add maca, 2
 	jmp cont_ciclo
+
 rato:
 
 
@@ -434,7 +454,8 @@ LER_SETA:
 		cmp			ah, 1
 		je			ESTEND
 		CMP 		AL, 27			; ESCAPE
-		JE			fim_jogo
+		jne			TESTE_END
+		call		are_you_sure_about_that
 TESTE_END:		
 		CALL		PASSA_TEMPO
 		mov			AX, PASSA_T_ant
@@ -499,7 +520,7 @@ DIREITA:
 
 fim_jogo:		
 		call		clear_screen
-		call		menu_controller
+		jmp			game_over;
 		RET
 
 dec_maca:
@@ -525,8 +546,8 @@ mostra_pontuacao endp
 ; macro para imprimir uma string no stdout
 ; params - recebe a string que vai imprimir
 mostra MACRO str
-	lea		dx,	str
 	mov		ah, 09h
+	lea		dx,	str
 	int		21h	
 endm
 ; :::::::::::::::::: MACRO Imprime String ::::::::::::::::::
@@ -594,23 +615,51 @@ CalcAleat endp
 
 ; :::::::::::::::::: Gera Numero Aleatório ::::::::::::::::::
 random_numbs proc
-	;call 	CalcAleat
-	;mov		ax, ultimo_num_aleat   	; ax = n. alea
-	;mov		bl, 31					; bl = 62
-	;mul		bl						; ax = al * bl
-	;mov		bl, 255					; bl = 255
-	;div		bl						; al = ax / bl
-	;add		al, 2					; al += 4
-	;mov bl, 2
-	;mul bl
-	;mov		POSX, al
-	
-	;call 	CalcAleat
-	;xor 	ax, ax
-	;mov		ax, ultimo_num_aleat
-	;pop		ax
+								; xor		ax,	ax
+								; xor		dx,	dx
+								; xor		cx, cx
+								; call 	CalcAleat
+								; mov		dx, ultimo_num_aleat
+								; mov		posx, dh
+								; mov		posy, dl
+								; cmp		posx, 62
+								; lea		dx, TutorialFile
+								; call	Imp_Fich
+								; jg		RTSx
+								; cmp		posy, 62
+								; jg		RTSy
+								; xor 	dx, dx
+								; ret
+														;mov		bl, 31					; bl = 62
+														;mul		bl						; ax = al * bl
+														;mov		bl, 255					; bl = 255
+														;div		bl						; al = ax / bl
+														;add		al, 2					; al += 4
+														;mov bl, 2
+														;mul bl
+														;mov		POSX, al
+														
+														;call 	CalcAleat
+														;xor 	ax, ax
+														;mov		ax, ultimo_num_aleat
+														;pop		ax
 	mov 	POSX, 10
 	mov		POSY, 6
+								; RTSx:
+								; 	mov		al, posx	; numero aleatorio de x
+								; 	mov		cl, 62
+								; 	mul		cl			; se o numero for > 8 bits desprezamos o resto
+								; 	mov		bl,	255
+								; 	div		bl			; dividir pelo maior numero de 8 bits
+								; 	mov		posx, ah
+								; 	ret
+								; RTSy:
+								; 	mov		al, posy
+								; 	mov		cl, 62
+								; 	mul		cl
+								; 	mov		bl, 255
+								; 	div		bl			; dividir pelo maior numero de 8 bits
+								; 	mov		posy, al
 	ret
 random_numbs endp
 ; :::::::::::::::::: Gera Numero Aleatório ::::::::::::::::::
@@ -624,13 +673,47 @@ start_game proc
 	goto_xy POSX, POSY
 	
 	call 	move_snake
+	cmp		al, 1Bh		; considerando que sempre o jogo acaba o jogador perdeu
+	call	are_you_sure_about_that
+	call	game_over		; podemos validar o ESC para perguntar se quer mesmo sair
 
-	mov		ah, 07h
-	int 21h 
-
-	jmp fim
 start_game endp
 ; :::::::::::::::::: Start Game ::::::::::::::::::
+
+; :::::::::::::::::: are_you_sure_about_that? ::::::::::::::::::
+are_you_sure_about_that proc
+ciclo:
+	lea 	dx, AreUSure
+	call	Imp_Fich
+	call	get_menu_option
+	cmp		al, '0'
+	JE		fim
+	cmp	 	al, '1'
+	je		game
+	call	wrong_input
+	jmp   	ciclo
+game:
+	call		start_game
+are_you_sure_about_that endp
+; :::::::::::::::::: are_you_sure_about_that? ::::::::::::::::::
+
+; :::::::::::::::::: Game Over ::::::::::::::::::
+game_over proc
+wrong_0:
+	call	clear_screen
+	lea		dx, gameOver
+	call	Imp_Fich
+	call	get_menu_option
+	cmp		al, '1'					; jogador nao quer voltar a jogar
+	je		fim
+	cmp		al, '2'					; jogador quer voltar a jogar
+	jne		wrong
+	call	menu_controller
+wrong:								; se o input não for válido, alerta o jogador e volta a perguntar
+	call	wrong_input				; notifica o jogador do aviso
+	jmp		wrong_0
+game_over endp
+; :::::::::::::::::: Game Over ::::::::::::::::::
 
 INICIO:
 	mov     	ax, DADOS

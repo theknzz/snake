@@ -1,5 +1,5 @@
 GAME_OVER
-
+1 - Fim   | 2 - Voltar a jogar
 
 
 
