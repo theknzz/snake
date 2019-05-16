@@ -61,6 +61,7 @@ DADOS	SEGMENT PARA 'DATA'
 
 		ultimo_num_aleat dw 	0
 		maca			db		0
+
 DADOS	ENDS
 
 CODIGO	SEGMENT PARA 'CODE'
@@ -137,7 +138,7 @@ clear_screen	PROC
 		PUSH CX
 		PUSH SI
 		XOR	BX,BX
-		MOV	CX, 25*80
+		MOV	CX, 24*80
 		mov bx, 160
 		MOV SI,BX
 clear:	
@@ -613,63 +614,65 @@ CalcAleat proc near
 CalcAleat endp
 ; :::::::::::::::::: Calcula Aleatorio ::::::::::::::::::
 
-; :::::::::::::::::: Gera Numero Aleatório ::::::::::::::::::
-random_numbs proc
-								; xor		ax,	ax
-								; xor		dx,	dx
-								; xor		cx, cx
-								; call 	CalcAleat
-								; mov		dx, ultimo_num_aleat
-								; mov		posx, dh
-								; mov		posy, dl
-								; cmp		posx, 62
-								; lea		dx, TutorialFile
-								; call	Imp_Fich
-								; jg		RTSx
-								; cmp		posy, 62
-								; jg		RTSy
-								; xor 	dx, dx
-								; ret
-														;mov		bl, 31					; bl = 62
-														;mul		bl						; ax = al * bl
-														;mov		bl, 255					; bl = 255
-														;div		bl						; al = ax / bl
-														;add		al, 2					; al += 4
-														;mov bl, 2
-														;mul bl
-														;mov		POSX, al
-														
-														;call 	CalcAleat
-														;xor 	ax, ax
-														;mov		ax, ultimo_num_aleat
-														;pop		ax
-	mov 	POSX, 10
-	mov		POSY, 6
-								; RTSx:
-								; 	mov		al, posx	; numero aleatorio de x
-								; 	mov		cl, 62
-								; 	mul		cl			; se o numero for > 8 bits desprezamos o resto
-								; 	mov		bl,	255
-								; 	div		bl			; dividir pelo maior numero de 8 bits
-								; 	mov		posx, ah
-								; 	ret
-								; RTSy:
-								; 	mov		al, posy
-								; 	mov		cl, 62
-								; 	mul		cl
-								; 	mov		bl, 255
-								; 	div		bl			; dividir pelo maior numero de 8 bits
-								; 	mov		posy, al
+; :::::::::::::::::: Gera Coordenada de X válida ::::::::::::::::::
+; Devolve em ax um numero valido de 8 bits
+; param : recebe em dl um aleatorio de 8 bits
+; NOTA: devolve sempre a mini celula da esquerda
+valid_Xcoord proc
+	xor 	ax,	ax
+	xor		bx, bx
+	xor		cx, cx
+	cmp		dl, 33
+	jg		invalid
+	cmp		dl, 2
+	jb		invalid
 	ret
-random_numbs endp
-; :::::::::::::::::: Gera Numero Aleatório ::::::::::::::::::
+
+invalid:
+	mov		al, dl
+	mov		cl, 33
+	mul		cl
+	mov		cl, 255
+	div		cl
+	add		al, 2 			; garantir que o nr e superior a 2
+	mov		posx, al
+	ret
+valid_Xcoord endp
+; :::::::::::::::::: Gera Coordenada de X válida ::::::::::::::::::
+
+; :::::::::::::::::: Gera Coordenada de Y válida ::::::::::::::::::
+valid_Ycoord proc
+	xor		ax,	ax
+	xor		bx, bx
+	xor 	cx, cx
+	cmp		dl, 22
+	jg		invalid_0
+	cmp		dl, 2
+	jb		invalid_0
+	ret
+invalid_0:
+	mov		al, dl
+	mov		cl, 22
+	mul		cl
+	mov		cl, 255
+	div		cl
+	add		al, 2
+	mov		posy, al
+	ret
+valid_Ycoord endp
+; :::::::::::::::::: Gera Coordenada de Y válida ::::::::::::::::::
 
 ; :::::::::::::::::: Start Game ::::::::::::::::::
 start_game proc
 	lea		dx, ClassicGame
 	call	Imp_Fich
-
-	call 	random_numbs
+	xor		ax,	ax
+	xor		bx, bx
+	call 	CalcAleat
+	mov		dx,	ultimo_num_aleat
+	call	valid_Xcoord
+	mov		dx, ultimo_num_aleat
+	call	valid_Ycoord
 	goto_xy POSX, POSY
 	
 	call 	move_snake
