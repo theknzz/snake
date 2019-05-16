@@ -34,14 +34,18 @@ DADOS	SEGMENT PARA 'DATA'
 	; :::::::::::::::::: Warnings ::::::::::::::::::
 
 	; :::::::::::::::::: Cobra Utils ::::::::::::::::::
-		tam				db 		1
-		cobra			dw		20 dup($) ; Ah - eixo x & Al - eixo y
-		head			dw		?	; AH - x cord / AL - y cord
-		tail 			dw		?	; AH - x cord / AL - y cord
+		tam				db 		0	; tamanho da cobra, menos 1 (facilita o uso do vetor)
+		snake_dir		db		620 dup(?) ; vetor de direçoes para cada "peça" da cobra
+		head_x			db		?
+		head_y			db		?	
+		tail_x 			db		?
+		tail_y			db		?
 	; :::::::::::::::::: Cobra Utils ::::::::::::::::::
 
-		difficulty		db		? 	; (?)
+
+		difficulty		db		? 	; (?) Multiplier para pontuação
 		conta_maca		db		0
+
 
 		POSy			db		10	; a linha pode ir de [1 .. 25]
 		POSx			db		40	; POSx pode ir [1..80]	
@@ -382,8 +386,9 @@ get_menu_option endp
 ; :::::::::::::::::: Movimento da Cobra ::::::::::::::::::
 move_snake PROC
 CICLO:
+	call 		dir_vector
 	;call		mostra_pontuacao 	; Mostra prontuação
-	goto_xy		POSx,POSy			; Vai para nova possição
+	goto_xy		head_x,head_y		; Vai para nova possição
 	mov 		ah, 08h				; Guarda o Caracter que está na posição do Cursor
 	mov			bh,0				; numero da página
 	int			10h
@@ -419,41 +424,46 @@ cont_ciclo:
 
 	;; Limpar o rasto da cabeça da cobra
 
-		goto_xy		POSxa,POSya		; Vai para a posição anterior do cursor
+									; MUDAR ISTO PARA APAGAR RASTO DA CAUDA EM VEZ DA CABEÇA, TALVEZ?
+		goto_xy		tail_x,tail_y		; Vai para a posição anterior do cursor
 		mov			ah, 02h
 		mov			dl, ' ' 		; Coloca ESPAÇO
-		int			21H	
-
+		int			21H
+		mov ah, tail_x
+		mov posxa, ah
 		inc			POSxa
-		goto_xy		POSxa,POSya	
+		goto_xy		POSxa,tail_y	
 		mov			ah, 02h
 		mov			dl, ' '			;  Coloca ESPAÇO
 		int			21H	
-		dec 		POSxa
+		call move_tail
+		goto_xy		head_x,head_y		; Vai para posição do cursor
 
-		goto_xy		POSx,POSy		; Vai para posição do cursor
 
 IMPRIME:
 
 	;; Atualizar a cabeça da cobra
+		mov 		ah, 08h				; Guarda o Caracter que está na posição do Cursor
+		mov			bh,0				; numero da página
+		int			10h
+
+		cmp 		al, '('				;  se houver cobra na posição atual, game over
+		je			fim_jogo
 
 		mov			ah, 02h
 		mov			dl, '('			; Coloca AVATAR1
 		int			21H
 		
+		mov 		ah, head_x
+		mov 		posx, ah
 		inc			POSx
-		goto_xy		POSx,POSy		
+		goto_xy		posx,head_y		
 		mov			ah, 02h
 		mov			dl, ')'			; Coloca AVATAR2
 		int			21H	
-		dec			POSx
-		
-		goto_xy		POSx,POSy		; Vai para posição do cursor
-		
-		mov			al, POSx		; Guarda a posição do cursor
-		mov			POSxa, al
-		mov			al, POSy		; Guarda a posição do cursor
-		mov			POSya, al
+
+		goto_xy		head_x, head_y		; Vai para posição do cursor
+
 		
 LER_SETA:	
 		call 		LE_TECLA_0
@@ -469,60 +479,58 @@ TESTE_END:
 		je			LER_SETA
 		mov			AX, PASSA_T
 		mov			PASSA_T_ant, AX
-		
+
 verifica_0:	
 		mov			al, direccao
 		cmp 		al, 0
 		jne			verifica_1
-		inc			POSx		;Direita
-		inc			POSx		;Direita
+		add			head_x, 2		;Direita
 		jmp			CICLO
 		
 verifica_1:	
 		mov 		al, direccao
 		cmp			al, 1
 		jne			verifica_2
-		dec			POSy		;cima
+		dec			head_y		;cima
 		jmp			CICLO
 		
 verifica_2:	
 		mov 		al, direccao
 		cmp			al, 2
 		jne			verifica_3
-		dec			POSx		;Esquerda
-		dec			POSx		;Esquerda
+		sub 		head_x, 2		;Esquerda
 		jmp			CICLO
 		
 verifica_3:	
 		mov 		al, direccao
-		cmp			al, 3		
+		cmp			al, 3	
 		jne			CICLO
-		inc			POSy		;BAIXO		
+		inc			head_y		;BAIXO	
 		jmp			CICLO
 		
 ESTEND:		
 		cmp 		al,48h
 		jne			BAIXO
 		mov			direccao, 1
-		jmp			CICLO
+		jmp			LER_SETA
 
 BAIXO:		
 		cmp			al,50h
 		jne			ESQUERDA
 		mov			direccao, 3
-		jmp			CICLO
+		jmp			LER_SETA
 
 ESQUERDA:
 		cmp			al,4Bh
 		jne			DIREITA
 		mov			direccao, 2
-		jmp			CICLO
+		jmp			LER_SETA
 
 DIREITA:
 		cmp			al,4Dh
 		jne			LER_SETA 
-		mov			direccao, 0	
-		jmp			CICLO
+		mov			direccao, 0
+		jmp			LER_SETA
 
 fim_jogo:		
 		call		clear_screen
@@ -531,9 +539,53 @@ fim_jogo:
 
 dec_maca:
 		dec 		maca
+		inc 		tam
 		jmp 		imprime
 
 move_snake ENDP
+
+dir_vector PROC
+xor si,si
+xor ax,ax
+mov al, tam
+mov cx, ax
+inc cx					; como tam = tamanho da cobra - 1,  inc no cx
+mov al, direccao
+ccl:
+xchg al, snake_dir[si]		; al = direçao que a 'peça' seguinte mais perto da cauda vai ter,  snake_dir(si) = dir que a posição anterior tinha
+inc si						; basicamente AL=0   snake dir=3,1,3,2,1   ->   snake_dir=0,3,1,3,2
+loop ccl
+ret
+dir_vector endp
+
+move_tail proc
+xor ax,ax
+mov al,tam
+mov si,ax
+mov al, snake_dir[si]		;al passa a ter direção que a cauda se deve mexer
+cmp al, 0 ;direita
+je tail_dir
+cmp al, 1 ;cima
+je tail_cima
+cmp al, 2 ;esquerda
+je tail_esq
+cmp al, 3 ;baixo
+je tail_baix
+ret
+tail_dir:
+add tail_x,2			;mexe para direita
+jmp fim_tail
+tail_cima:
+dec tail_y				;mexe para cima
+jmp fim_tail
+tail_esq:				
+sub tail_x, 2			;mexe para esquerda
+jmp fim_tail
+tail_baix:				
+inc tail_y				;mexe para baixo
+fim_tail:
+ret
+move_tail endp
 ; :::::::::::::::::: Movimento da Cobra ::::::::::::::::::
 
 ; :::::::::::::::::: Mostra Pontuação ::::::::::::::::::
@@ -754,13 +806,22 @@ add_apple endp
 start_game proc
 	lea		dx, ClassicGame
 	call	Imp_Fich
+  
 	xor		ax,	ax
 	xor		bx, bx
 	call 	CalcAleat
 	call	valid_Xcoord
 	call	CalcAleat
 	call	valid_Ycoord
-	goto_xy POSX, POSY
+
+	mov ah, posx
+	mov al, posy
+	mov head_x, ah
+	mov head_y, al
+	dec al
+	mov tail_x, ah
+	mov tail_y, al
+	mov  	tam, 0
 	
 	call 	move_snake
 	cmp		al, 1Bh		; considerando que sempre o jogo acaba o jogador perdeu
@@ -789,32 +850,32 @@ are_you_sure_about_that endp
 ; :::::::::::::::::: are_you_sure_about_that? ::::::::::::::::::
 
 ; :::::::::::::::::: Draw Snake Position ::::::::::::::::::
-draw_snake proc
-		xor			cx, cx
-		xor			ax,	ax
-		xor			si, si
-		mov			cl, tam
-loop_1:
-		mov			ax,	cobra[si] ; se a head estiver no array da cobra
-		cmp			ax,	'$'
-		je			fim_draw
-
-		goto_xy		ah, al
-		mov			ah, 02h
-		mov			dl, '(' 		; Coloca ESPAÇO
-		int			21H	
-
-		inc			ah
-		goto_xy		ah, al	
-		mov			ah, 02h
-		mov			dl, ')'			;  Coloca ESPAÇO
-		int			21H
-		call		get_menu_option
-		loop		loop_1
-
-fim_draw:		
-		goto_xy		POSx,POSy		; Vai para posição do cursor
-draw_snake endp
+;draw_snake proc
+;		xor			cx, cx
+;		xor			ax,	ax
+;		xor			si, si
+;		mov			cl, tam
+;loop_1:
+;		mov			ax,	cobra[si] ; se a head estiver no array da cobra
+;		cmp			ax,	'$'
+;		je			fim_draw
+;
+;		goto_xy		ah, al
+;		mov			ah, 02h
+;		mov			dl, '(' 		; Coloca ESPAÇO
+;		int			21H	
+;
+;		inc			ah
+;		goto_xy		ah, al	
+;		mov			ah, 02h
+;		mov			dl, ')'			;  Coloca ESPAÇO
+;		int			21H
+;		call		get_menu_option
+;		loop		loop_1
+;
+;fim_draw:		
+;		goto_xy		POSx,POSy		; Vai para posição do cursor
+;draw_snake endp
 ; :::::::::::::::::: Draw Snake Position ::::::::::::::::::
 
 ; :::::::::::::::::: Game Over ::::::::::::::::::
