@@ -732,6 +732,7 @@ add_macaVerde:
 	mov		dl, 'V'
 	int		21h
 	dec 	posx
+	
 cursoBackToPlace:
 	xor 	ax, ax
 	mov		al, POSxa
