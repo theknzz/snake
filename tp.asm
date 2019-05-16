@@ -41,6 +41,7 @@ DADOS	SEGMENT PARA 'DATA'
 	; :::::::::::::::::: Cobra Utils ::::::::::::::::::
 
 		difficulty		db		? 	; (?)
+		conta_maca		db		0
 
 		POSy			db		10	; a linha pode ir de [1 .. 25]
 		POSx			db		40	; POSx pode ir [1..80]	
@@ -398,19 +399,23 @@ CICLO:
 	jmp cont_ciclo
 
 maca_verde:
-	inc maca
-	jmp cont_ciclo
+	call 	add_apple
+	inc 	maca
+	jmp 	cont_ciclo
 
 maca_madura:
-	add maca, 2
-	jmp cont_ciclo
+	call 	add_apple
+	jmp		game_over
+	inc	 	maca
+	inc	 	maca
+	jmp 	cont_ciclo
 
 rato:
 
 
 cont_ciclo:
-		cmp maca, 0					; @Andre pq que fazes esta verificação ?
-		ja dec_maca
+		;cmp maca, 0					; @Andre pq que fazes esta verificação ?
+		;ja dec_maca
 
 	;; Limpar o rasto da cabeça da cobra
 
@@ -615,21 +620,21 @@ CalcAleat endp
 ; :::::::::::::::::: Calcula Aleatorio ::::::::::::::::::
 
 ; :::::::::::::::::: Gera Coordenada de X válida ::::::::::::::::::
-; Devolve em ax um numero valido de 8 bits
 ; param : recebe em dl um aleatorio de 8 bits
 ; NOTA: devolve sempre a mini celula da esquerda
 valid_Xcoord proc
+	mov		dx,	ultimo_num_aleat
 	xor 	ax,	ax
 	xor		bx, bx
 	xor		cx, cx
-	cmp		dl, 33
-	jg		invalid
-	cmp		dl, 2
+	cmp		dh, 33
+	jge		invalid
+	cmp		dh, 2
 	jb		invalid
 	ret
 
 invalid:
-	mov		al, dl
+	mov		al, dh
 	mov		cl, 33
 	mul		cl
 	mov		cl, 255
@@ -641,12 +646,15 @@ valid_Xcoord endp
 ; :::::::::::::::::: Gera Coordenada de X válida ::::::::::::::::::
 
 ; :::::::::::::::::: Gera Coordenada de Y válida ::::::::::::::::::
+; param : recebe em dl um aleatorio de 8 bits
+; NOTA: devolve sempre a mini celula da esquerda
 valid_Ycoord proc
+	mov		dx,	ultimo_num_aleat
 	xor		ax,	ax
 	xor		bx, bx
 	xor 	cx, cx
 	cmp		dl, 22
-	jg		invalid_0
+	jge		invalid_0
 	cmp		dl, 2
 	jb		invalid_0
 	ret
@@ -662,6 +670,85 @@ invalid_0:
 valid_Ycoord endp
 ; :::::::::::::::::: Gera Coordenada de Y válida ::::::::::::::::::
 
+; :::::::::::::::::: Adiciona Macas ::::::::::::::::::
+; aleatoriamente adiciona uma maca numa posicao aleatoria
+add_apple proc
+	; xor		ax,	ax
+	; mov		al,	posx 				; guarda a posicao atual do cursor
+	; mov		POSxa, al
+	; mov		al, posy
+	; mov		posya, al
+
+	xor		ax, ax
+	xor		dx,	dx
+	xor		bx, bx
+	xor		cx, cx
+
+	call 	CalcAleat				; senao gera um numero aleatorio
+	mov		cx, ultimo_num_aleat	; desprezamos 8 bits desse numero gerado
+	mov		bl, 2
+	mov		al, cl
+	div		bl						; dividimos por 2 para saber se o numero e para ou impar
+	
+	cmp		ah, 0					
+	je		add_macaVerde			; se for para adicionamos uma maca verde 'V'
+
+	call	CalcAleat				; senao adicionamos uma maca madura 'M'
+	call	valid_Xcoord
+	call	CalcAleat
+	call	valid_Ycoord
+	goto_xy	posx, posy
+
+	xor		ax, ax
+	xor		dx, dx
+
+	mov		ah, 02h
+	mov		dl, 'M' 				; interrupcao para escrever no stdout 
+	int 	21h						; NOTA: al = dl
+	
+	inc		posx					; imprimir na mini celula do lado direto
+	goto_xy posx, posy
+	mov		ah, 02h
+	mov		dl, 'M'
+	int 	21h
+	dec		posx
+	jmp		cursoBackToPlace		; voltar a colocar o cursor na posicao antiga
+
+add_macaVerde:
+	call	CalcAleat
+	call	valid_Xcoord
+	call	CalcAleat
+	call	valid_Ycoord
+	goto_xy	posx, posy
+
+	xor		dx, dx
+	mov		ah, 02h
+	mov		dl, 'V'
+	int		21h
+	
+	inc		posx
+	goto_xy posx, posy
+	mov		ah, 02h
+	mov		dl, 'V'
+	int		21h
+	dec 	posx
+cursoBackToPlace:
+	xor 	ax, ax
+	mov		al, POSxa
+	mov		posx, al
+	mov		al,	posya
+	mov		posy, al
+	goto_xy	posxa, posya
+
+fim_addApple:
+	ret
+add_apple endp
+; :::::::::::::::::: Adiciona Macas ::::::::::::::::::
+
+
+
+
+
 ; :::::::::::::::::: Start Game ::::::::::::::::::
 start_game proc
 	lea		dx, ClassicGame
@@ -669,9 +756,8 @@ start_game proc
 	xor		ax,	ax
 	xor		bx, bx
 	call 	CalcAleat
-	mov		dx,	ultimo_num_aleat
 	call	valid_Xcoord
-	mov		dx, ultimo_num_aleat
+	call	CalcAleat
 	call	valid_Ycoord
 	goto_xy POSX, POSY
 	
@@ -679,7 +765,7 @@ start_game proc
 	cmp		al, 1Bh		; considerando que sempre o jogo acaba o jogador perdeu
 	call	are_you_sure_about_that
 	call	game_over		; podemos validar o ESC para perguntar se quer mesmo sair
-
+	ret
 start_game endp
 ; :::::::::::::::::: Start Game ::::::::::::::::::
 
@@ -697,6 +783,7 @@ ciclo:
 	jmp   	ciclo
 game:
 	call		start_game
+	ret
 are_you_sure_about_that endp
 ; :::::::::::::::::: are_you_sure_about_that? ::::::::::::::::::
 
@@ -754,7 +841,6 @@ INICIO:
 	MOV			ES,AX			; (?)	; ES indica segmento de memória de VIDEO
 	CALL 		clear_screen
 	call		menu_controller
-
 fim:	mov     ah,4ch
 	int     21h
 
