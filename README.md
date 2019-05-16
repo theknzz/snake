@@ -18,7 +18,7 @@
 - [ ] GameOver
 - [ ] GameWon
 
-# UI
+## UI
 - [x] Mensagens de inputs incorretos (?)
 
 ## Utils
