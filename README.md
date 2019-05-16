@@ -18,10 +18,13 @@
 - [ ] GameOver
 - [ ] GameWon
 
-## UI
-- [ ] Mensagens de inputs incorretos (?)
+# UI
+- [x] Mensagens de inputs incorretos (?)
 
 ## Utils
 - [ ] Gerar numero aleatorio (maça + rato + cabeça da cobra)
 - [ ] Verificar a rotina de *Delay* do prof
 - [ ] Criar rotinas de atualizar o mapa
+
+# Niveis
+- [x] Diferenciar a velocidade e pontos dos niveis

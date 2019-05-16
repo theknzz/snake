@@ -12,14 +12,14 @@
                dMP dMP dMP.aMP dMP.aMP dMP.aMP dMP     dMP        
               dMP dMP  VMMMP"  VMMMP" dMMMMP" dMMMMMP dMMMMMP     
 
-                                                              
-                                1 - Classic game
-                                2 - Bonus game
-                                3 - Back to main menu
 
+                o-----------------------------------------------o
+                |       1       |       2       |       3       |
+                |    Classic    |     Bonus     |  Back to menu |
+                o...............................................o
 
       Insert Option > 
-                                                                             
 
-                  
+                      
                                                                              
+                                                               

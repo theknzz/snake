@@ -12,11 +12,11 @@
                dMP dMP dMP.aMP dMP.aMP dMP.aMP dMP     dMP        
               dMP dMP  VMMMP"  VMMMP" dMMMMP" dMMMMMP dMMMMMP     
 
-                               
-                            1 - Game history
-                            2 - Statistical Values
-                            3 - Back
 
+                o---------------------------------------o
+                |       1       |       2       |   3   |
+                |  Game history |     Stats     |  Back |
+                o---------------------------------------o           
 
       Insert Option > 
 
