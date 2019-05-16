@@ -697,6 +697,35 @@ game:
 are_you_sure_about_that endp
 ; :::::::::::::::::: are_you_sure_about_that? ::::::::::::::::::
 
+; :::::::::::::::::: Draw Snake Position ::::::::::::::::::
+draw_snake proc
+		xor			cx, cx
+		xor			ax,	ax
+		xor			si, si
+		mov			cl, tam
+loop_1:
+		mov			ax,	cobra[si] ; se a head estiver no array da cobra
+		cmp			ax,	'$'
+		je			fim_draw
+
+		goto_xy		ah, al
+		mov			ah, 02h
+		mov			dl, '(' 		; Coloca ESPAÇO
+		int			21H	
+
+		inc			ah
+		goto_xy		ah, al	
+		mov			ah, 02h
+		mov			dl, ')'			;  Coloca ESPAÇO
+		int			21H
+		call		get_menu_option
+		loop		loop_1
+
+fim_draw:		
+		goto_xy		POSx,POSy		; Vai para posição do cursor
+draw_snake endp
+; :::::::::::::::::: Draw Snake Position ::::::::::::::::::
+
 ; :::::::::::::::::: Game Over ::::::::::::::::::
 game_over proc
 wrong_0:
