@@ -404,13 +404,12 @@ CICLO:
 	jmp cont_ciclo
 
 maca_verde:
-	call 	add_apple
+	;call 	add_merda
 	inc 	maca
 	jmp 	cont_ciclo
 
 maca_madura:
-	call 	add_apple
-	call	clear_screen
+	;call 	add_apple
 	inc	 	maca
 	inc	 	maca
 	jmp 	cont_ciclo
