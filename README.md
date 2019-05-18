@@ -1,30 +1,36 @@
 # SnakeGame 🐍
-## TaskList
-- [ ] Definir tarefas
-
 ## Cobra
-- [ ] Variaveis (cabeça, cauda)
-- [ ] Movimento da cobra (standar + bonus)
-- [ ] Cobra a aumentar/diminuir de tamanho 
-- [ ] Atualizar a cobra no mapa
+- [x] Variaveis (cabeça, cauda)
+- [x] Movimento da cobra (standard)
+- [ ] Movimento da cobra (bonus)
+- [x] Cobra a aumentar
+- [ ] Cobra a diminuir de tamanho
+- [x] Atualizar a cobra no mapa
 
 ## Mapa
-- [ ] Limites do mapa (standar + bonus)
-- [ ] Poder editar o mapa (meter muros, ...)
+- [x] Limites do mapa (standard)
+- [ ] Limites do mapa (bonus)
+- [x] Poder editar o mapa (meter muros, ...) `not completed`
 
 ## Ficheiros
 - [ ] Rotinas para atualizar o ficheiro de pontuações
 - [ ] Variáveis para a gestão da atualização do ficheiro (maior pontuação?)
-- [ ] GameOver
-- [ ] GameWon
+- [x] GameOver
 
 ## UI
 - [x] Mensagens de inputs incorretos (?)
 
 ## Utils
-- [ ] Gerar numero aleatorio (maça + rato + cabeça da cobra)
-- [ ] Verificar a rotina de *Delay* do prof
-- [ ] Criar rotinas de atualizar o mapa
+- [ ] Gerar numero aleatorio
+- [x] Spawn da cabeça da cobra de forma aleatorio
+- [x] Spawn das macas de forma aleatoria
+- [ ] Spawn de Ratos
+- [ ] Cores nas maças
 
-# Niveis
+## Niveis
 - [x] Diferenciar a velocidade e pontos dos niveis
+- [ ] Multiplier de pontuação
+
+## GameOver
+- [ ] Voltar a jogar `not completed` (falta limpar os dados)
+- [ ] Guardar informação nos respetivos ficheiros  
