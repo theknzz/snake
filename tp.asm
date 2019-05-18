@@ -25,6 +25,7 @@ DADOS	SEGMENT PARA 'DATA'
 	; :::::::::::::::::: File Handles ::::::::::::::::::
 
 	; :::::::::::::::::: Handles ::::::::::::::::::
+
 		pontos			dw		0
 		str_aux			db		10 dup('$')
 	; :::::::::::::::::: Handles ::::::::::::::::::
@@ -34,7 +35,7 @@ DADOS	SEGMENT PARA 'DATA'
 	; :::::::::::::::::: Warnings ::::::::::::::::::
 
 	; :::::::::::::::::: Cobra Utils ::::::::::::::::::
-		tam				db 		20	; tamanho da cobra, menos 1 (facilita o uso do vetor)
+		tam				db 		1	; tamanho da cobra, menos 1 (facilita o uso do vetor)
 		snake_dir		db		620 dup(?) ; vetor de direçoes para cada "peça" da cobra
 		head_x			db		?
 		head_y			db		?	
@@ -43,19 +44,18 @@ DADOS	SEGMENT PARA 'DATA'
 	; :::::::::::::::::: Cobra Utils ::::::::::::::::::
 
 	; :::::::::::::::::: Views ::::::::::::::::::
-				GameBoardView	db	"                                                                              ",13,10
-								db	"                          DANGER NOODLE                                ______ ",13,10
-								db	"  ##################################################################  |      |",13,10
-								db	"  ##                                                              ##  |      |",13,10
-								db	"  ##                                                              ##  |      |",13,10
-								db	"  ##                                                              ##  |      |",13,10
-								db	"  ##                                                              ##  |      |",13,10
-								db	"  ##                                                              ##  |      |",13,10
-								db	"  ##                                                              ##  |      |",13,10
-								db	"  ##                  MM                                          ##  |      |",13,10
-								db	"  ##                                                              ##  |      |",13,10
-								db	"  ##                                                              ##  |      |",13,10
-								db	"  ##                                                              ##  |______|",13,10
+				GameBoardView	db	"                          DANGER NOODLE                                       ",13,10
+								db	"  ##################################################################          ",13,10
+								db	"  ##                                                              ##          ",13,10  ; Limites
+								db	"  ##                                                              ##          ",13,10	; x : 5 - 64
+								db	"  ##                                                              ##          ",13,10	; y : 3 - 20
+								db	"  ##                                                              ##          ",13,10
+								db	"  ##                                                              ##          ",13,10
+								db	"  ##                                                              ##          ",13,10
+								db	"  ##                  MM                                          ##          ",13,10
+								db	"  ##                                                              ##          ",13,10
+								db	"  ##                                                              ##          ",13,10
+								db	"  ##                                                              ##          ",13,10
 								db	"  ##                                                              ##          ",13,10
 								db	"  ##                                                              ##          ",13,10
 								db	"  ##                                                              ##          ",13,10
@@ -67,7 +67,35 @@ DADOS	SEGMENT PARA 'DATA'
 								db	"  ##                                                              ##          ",13,10
 								db	"  ##                                                              ##          ",13,10
 								db	"  ##################################################################          ",13,10
-								db	"            SCORE:                           LEVEL:                          $",13,10
+								db	"            SCORE:                           LEVEL:                           ",13,10
+								db	"                                                                             $",13,10
+
+			BonusGameBoardView	db	"                                                                              ",13,10
+								db	"                           DANGER NOODLE                       Vidas: V V V   ",13,10
+								db	"  ##################################################################          ",13,10
+								db	"  ##                                                              ##          ",13,10
+								db	"  ##                                                              ##          ",13,10
+								db	"  ##                                                              ##          ",13,10
+								db	"  ##                                                              ##          ",13,10
+								db	"  ##                                                              ##          ",13,10
+								db	"  ##                                                              ##          ",13,10
+								db	"  ##                  MM                                          ##          ",13,10
+								db	"  ##                                                              ##          ",13,10
+								db	"  ##                                                              ##          ",13,10
+								db	"  ##                                                              ##          ",13,10
+								db	"  ##                                                              ##          ",13,10
+								db	"  ##                                                              ##          ",13,10
+								db	"  ##                                                              ##          ",13,10
+								db	"  ##                                                              ##          ",13,10
+								db	"  ##                                                              ##          ",13,10
+								db	"  ##                                                              ##          ",13,10
+								db	"  ##                                                              ##          ",13,10
+								db	"  ##                                              MM              ##          ",13,10
+								db	"  ##                                                              ##          ",13,10
+								db	"  ##                                                              ##          ",13,10
+								db	"  ##################################################################          ",13,10
+								db	"            SCORE:                           LEVEL:                           ",13,10
+								db	"                                                                             $",13,10
 								
 
 			MainMenuView		db	"                                                                             ",13,10
@@ -97,6 +125,32 @@ DADOS	SEGMENT PARA 'DATA'
 								db	"                                                                            $",13,10
 
 
+	BonusChooseDifficultyView 	db	"                                                                             ",13,10
+								db	"                                                                             ",13,10
+								db	"                  dMMMMb  .aMMMb  dMMMMb  .aMMMMP dMMMMMP dMMMMb             ",13,10
+								db	"                 dMP VMP dMP dMP dMP dMP dMP     dMP     dMP.dMP             ",13,10
+								db  "                dMP dMP dMMMMMP dMP dMP dMP MMP dMMMP   dMMMMK               ",13,10
+								db 	"               dMP.aMP dMP dMP dMP dMP dMP.dMP dMP     dMP AMF               ",13,10
+								db 	"              dMMMMP  dMP dMP dMP dMP  VMMMP  dMMMMMP dMP dMP                ",13,10
+								db  "                                                                             ",13,10
+								db 	"                  dMMMMb  .aMMMb  .aMMMb  dMMMMb  dMP     dMMMMMP            ",13,10
+								db 	"                 dMP dMP dMP dMP dMP dMP dMP VMP dMP     dMP                 ",13,10
+								db 	"                dMP dMP dMP dMP dMP dMP dMP dMP dMP     dMMMP                ",13,10
+								db 	"               dMP dMP dMP.aMP dMP.aMP dMP.aMP dMP     dMP                   ",13,10
+								db 	"              dMP dMP  VMMMP   VMMMP  dMMMMP  dMMMMMP dMMMMMP                ",13,10
+								db	"                                                                             ",13,10
+								db	"                                                                             ",13,10
+								db  "               o--------------------------------------------------o          ",13,10
+								db  "               |   1   |    2   |     3     |     4      |    5   |          ",13,10
+								db 	"               | Slug  |  Hare  |  Cheetah  | Edit Board |  Back  |          ",13,10
+								db 	"               o--------------------------------------------------o          ",13,10
+								db	"                                                                             ",13,10
+								db 	"      Insert Option >                                                        ",13,10
+								db	"                                                                             ",13,10
+								db	"                                                                             ",13,10
+								db	"                                                                             ",13,10
+								db	"                                                                            $",13,10
+
 		ChooseDifficultyView 	db	"                                                                             ",13,10
 								db	"                                                                             ",13,10
 								db	"                  dMMMMb  .aMMMb  dMMMMb  .aMMMMP dMMMMMP dMMMMb             ",13,10
@@ -112,10 +166,10 @@ DADOS	SEGMENT PARA 'DATA'
 								db 	"              dMP dMP  VMMMP   VMMMP  dMMMMP  dMMMMMP dMMMMMP                ",13,10
 								db	"                                                                             ",13,10
 								db	"                                                                             ",13,10
-								db  "                    o-------------------------------------o                  ",13,10
-								db  "                    |   1   |    2   |     3     |    4   |                  ",13,10
-								db 	"                    | Slug  |  Hare  |  Cheetah  |  Back  |                  ",13,10
-								db 	"                    o-------------------------------------o                  ",13,10
+								db  "                   o-------------------------------------o                   ",13,10
+								db  "                   |   1   |    2   |     3     |    5   |                   ",13,10
+								db 	"                   | Slug  |  Hare  |  Cheetah  |  Back  |                   ",13,10
+								db 	"                   o-------------------------------------o                   ",13,10
 								db	"                                                                             ",13,10
 								db 	"      Insert Option >                                                        ",13,10
 								db	"                                                                             ",13,10
@@ -363,15 +417,15 @@ DADOS	SEGMENT PARA 'DATA'
 		POSya			db		5	; Posição anterior de y
 		POSxa			db		10	; Posição anterior de x
 		POSxPont		db		19
-		POSyPont		db		24
+		POSyPont		db		23
 		posxlevel		db 		52
-		posylevel		db		24
+		posylevel		db		23
 		
 
 		PASSA_T			dw		0
 		PASSA_T_ant		dw		0
 		direccao		db		3
-		
+		direccao_edita	db		0
 		Centesimos		dw 		0
 		FACTOR			db		100
 		metade_FACTOR	db		?
@@ -602,7 +656,7 @@ gameopts:
 		je 		classic_game
 
 		cmp		al, '2'
-		je		show_main_menu 			; Bonus Game
+		je		bonus_game 			; Bonus Game
 
 		cmp 	al, '3'
 		je		show_main_menu
@@ -611,8 +665,6 @@ gameopts:
 		jmp		gameopts
 
 classic_game:
-	; lea		dx,	cDifficulty			; imprime o ficheiro corresponde à escolha da dificuldade
-	; call	Imp_Fich
 	lea		dx, ChooseDifficultyView
 	mov		ah, 09h
 	int		21h
@@ -653,6 +705,54 @@ classic_game:
 		call 	start_game
 		jmp		show_main_menu
 
+bonus_game:
+	lea		dx, BonusChooseDifficultyView
+	mov		ah, 09H
+	int		21H
+
+	call	get_menu_option
+
+	cmp 	al , '1'
+	je 		slug_0
+
+	cmp 	al, '2'
+	je		hare_0
+
+	cmp		al, '3'
+	je		cheetah_0
+
+	cmp		al, '4'
+	je		edit_board
+
+	cmp		al, '5'
+	je		gameopts
+
+	call	wrong_input
+	jmp		bonus_game
+
+slug_0:
+	mov		factor, 100
+	jmp		bonus_game_start
+
+hare_0:
+	mov		factor, 50
+	jmp		bonus_game_start
+
+cheetah_0:
+	mov		factor, 25
+	jmp		bonus_game_start
+
+edit_board:
+		lea		dx, BonusGameBoardView
+		mov		ah, 09H
+		int		21h
+		call	changeBoard
+		jmp 	show_main_menu
+
+bonus_Game_start:
+	call	start_game  ; mudar para a rotina que vai criar o ambiente para o bonus game
+	jmp		show_main_menu
+
 stats:
 		lea		dx, StatsMenuView			; coloca o ponteiro para a string em dx
 		mov		ah, 09h
@@ -685,19 +785,19 @@ game_stats:
 		mov		ah, 09H
 		int		21H
 
-		goto_xy 31, 17
+		goto_xy 31, 16
 		lea		dx, nr_games
 		mov		ah, 09H
 		int		21H
-		goto_xy	31, 18
+		goto_xy	31, 17
 		lea		dx, best_play
 		mov		ah, 09H
 		int		21H
-		goto_xy	32, 19
+		goto_xy	32, 18
 		lea		dx, worst_play
 		mov		ah, 09H
 		int		21H
-		goto_xy	34, 20
+		goto_xy	34, 19
 		lea		dx, average_play
 		mov		ah, 09H
 		int		21H
@@ -716,6 +816,116 @@ madeby:
 
 menu_controller endp
 ; :::::::::::::::::: Controlador do Menu ::::::::::::::::::
+
+LE_TECLA	PROC
+
+		mov		ah,08h
+		int		21h
+		mov		ah,0
+		cmp		al,0
+		jne		SAI_TECLA
+		mov		ah, 08h
+		int		21h
+		mov		ah,1
+SAI_TECLA:	RET
+LE_TECLA	endp
+
+; Change Game Board
+
+changeBoard proc
+		; mov 	bl, 10
+		; mov		bh, 30
+		; mov		posx, bl
+		; mov		posy, bh
+		; goto_xy	posx, posy
+LER_SETA:
+		call 	LE_TECLA
+		cmp		ah, 1
+		je		ESTEND
+		CMP 	AL, 27	; ESCAPE
+		je		fim_ler_seta
+
+		cmp		al, 32
+		jne 	LER_SETA
+
+		mov		ah, 08H
+		mov		bh, 0
+		int		10h
+
+		cmp		al, ' '
+		je		createMuro
+
+		mov		ah, 02H
+		mov		dl, ' '
+		int		21H
+		inc		posx
+		goto_xy posx, posy
+		mov		ah, 02H
+		mov		dl, ' '
+		int		21H
+		dec		posx
+		goto_xy	posx, posy
+		jmp 	LER_SETA
+createMuro:
+		mov		ah, 02H
+		mov		dl, '#'
+		int		21H
+		inc		posx
+		goto_xy posx, posy
+		mov		ah, 02H
+		mov		dl, '#'
+		int		21H
+		dec		posx
+		goto_xy	posx, posy
+		jmp LER_SETA
+fim_ler_seta:
+		ret
+		jmp		LER_SETA
+		
+ESTEND:		
+		cmp 		al,48h
+		jne		BAIXO
+		cmp		posy, 2			; para nao saltar fora do mapa
+		je		baixo	
+		dec		POSy		;cima
+		goto_xy	posx, posy
+		jmp		LER_SETA
+
+BAIXO:		
+		cmp		al,50h
+		jne		ESQUERDA
+		cmp		posy, 21		; para nao saltar fora do mapa
+		je		esquerda
+		inc 		POSy		;Baixo
+		goto_xy	posx, posy
+		jmp		LER_SETA
+
+ESQUERDA:
+		cmp		al,4Bh
+		jne		DIREITA
+		cmp		posx, 4			; para nao saltar fora do mapa
+		je		direita
+		dec		POSx		;Esquerda
+		dec		POSx		;Esquerda
+		goto_xy	posx, posy
+		jmp		LER_SETA
+
+DIREITA:
+		cmp		al,4Dh
+		jne		help
+		cmp		posx, 64			; para nao saltar fora do mapa
+		je		help 
+		inc		POSx		;Direita
+		inc		POSx		;Direita
+		goto_xy	posx, posy
+		jmp	LER_SETA
+
+help:
+		cmp		al, 48h
+		jne		LER_SETA
+		jmp		LER_SETA
+	
+changeBoard endp
 
 ; :::::::::::::::::: Obter Opção ::::::::::::::::::
 get_menu_option PROC
@@ -966,54 +1176,48 @@ move_tail endp
 ; :::::::::::::::::: Movimento da Cobra ::::::::::::::::::
 
 ; :::::::::::::::::: Mostra Pontuação ::::::::::::::::::
+mostra_pontuacao proc    ; 8 bits max pontos
+	push	ax
+	push	bx
+	push	cx
+	push	dx
+	xor		si, si
+	xor		dx, dx
+	xor		ax, ax
+	xor		bx, bx
+	mov		bx, 10
+	mov		AX, pontos
 
-
-; mostra_pontuacao proc
-; 	push	ax
-; 	push	bx
-; 	push	cx
-; 	push	dx
-; 	xor		si, si
-; 	xor		dx, dx
-; 	xor		ax, ax
-; 	xor		bx, bx
-; 	mov		bl, 10
-; 	mov		al, pontos
-
-; break_chars:
-; 	xor		ah, ah
-; 	div		bl					; ah fica com o caracter a converter para ascii
-; 	cmp		ah, 0
-; 	je		display
-; 	add		ah, 30h				; para converter para ascii
-; 	mov		str_aux[si], ah
-; 	inc		si
-; 	loop	break_chars
+break_chars:
+	xor		dx, dx
+	div		bx					; ah fica com o caracter a converter para ascii
+	add		dl, 30h				; para converter para ascii
+	mov		str_aux[si], dl
+	cmp		ax, 0
+	je		display
+	inc		si
+	jmp		break_chars
 	
-; display:
-; 	dec 	si
-; 	mov		cx, si
-; 	goto_xy	posxpont, posypont
-; display_pont:
-; 	xor		dl, dl
-; 	mov		ah, 02h
-; 	mov		dl, str_aux[si]
-; 	int		21h
-; 	cmp		si, 0
-; 	je		fim_mostra
-; 	dec		si
-; 	jmp		display_pont
+display:
+	goto_xy	posxpont, posypont
+display_pont:
+	xor		dl, dl
+	mov		ah, 02h
+	mov		dl, str_aux[si]
+	int		21h
+	cmp		si, 0
+	je		fim_mostra
+	dec		si
+	jmp		display_pont
 
-; fim_mostra:
-; 	goto_xy	posx, posy  		; será que é para aqui que ele volta, ou volta para a cabeça ?
-; 	pop		ax
-; 	pop		bx
-; 	pop		cx
-; 	pop		dx
-; 	ret
-; mostra_pontuacao endp
-
-
+fim_mostra:
+	goto_xy	posx, posy  		
+	pop		ax
+	pop		bx
+	pop		cx
+	pop		dx
+	ret
+mostra_pontuacao endp
 ; :::::::::::::::::: Mostra Pontuação ::::::::::::::::::
 
 ; :::::::::::::::::: MACRO Imprime String ::::::::::::::::::
@@ -1320,11 +1524,11 @@ game_over endp
 INICIO:
 	mov     	ax, DADOS
 	mov     	ds, ax
-	MOV			AX,0B800H 		; (?)
-	MOV			ES,AX			; (?)	; ES indica segmento de memória de VIDEO
+	MOV			AX,0B800H 		
+	MOV			ES,AX			
 	CALL 		clear_screen
 	call		menu_controller
-	
+	call		changeBoard
 fim:
 	call clear_screen	
 	mov     ah,4ch
