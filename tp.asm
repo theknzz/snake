@@ -52,7 +52,6 @@ DADOS	SEGMENT PARA 'DATA'
 								db	"  ##                                                              ##          ",13,10
 								db	"  ##                                                              ##          ",13,10
 								db	"  ##                                                              ##          ",13,10
-								db	"  ##                  MM                                          ##          ",13,10
 								db	"  ##                                                              ##          ",13,10
 								db	"  ##                                                              ##          ",13,10
 								db	"  ##                                                              ##          ",13,10
@@ -63,7 +62,8 @@ DADOS	SEGMENT PARA 'DATA'
 								db	"  ##                                                              ##          ",13,10
 								db	"  ##                                                              ##          ",13,10
 								db	"  ##                                                              ##          ",13,10
-								db	"  ##                                              MM              ##          ",13,10
+								db	"  ##                                                              ##          ",13,10
+								db	"  ##                                                              ##          ",13,10
 								db	"  ##                                                              ##          ",13,10
 								db	"  ##                                                              ##          ",13,10
 								db	"  ##################################################################          ",13,10
@@ -167,7 +167,7 @@ DADOS	SEGMENT PARA 'DATA'
 								db	"                                                                             ",13,10
 								db	"                                                                             ",13,10
 								db  "                   o-------------------------------------o                   ",13,10
-								db  "                   |   1   |    2   |     3     |    5   |                   ",13,10
+								db  "                   |   1   |    2   |     3     |   4    |                   ",13,10
 								db 	"                   | Slug  |  Hare  |  Cheetah  |  Back  |                   ",13,10
 								db 	"                   o-------------------------------------o                   ",13,10
 								db	"                                                                             ",13,10
@@ -411,6 +411,10 @@ DADOS	SEGMENT PARA 'DATA'
 		difficulty		db		? 	; (?) Multiplier para pontuação
 		conta_maca		db		0
 
+		nr_ratos		db		0
+		rato_x			db 		?
+		rato_y			db		?
+		tp_vida			db		?
 
 		POSy			db		10	; a linha pode ir de [1 .. 25]
 		POSx			db		40	; POSx pode ir [1..80]	
@@ -1019,8 +1023,9 @@ cont_ciclo:
 
 
 IMPRIME:
-
-	;; Atualizar a cabeça da cobra
+		call get_menu_option
+		call		verifica_rato
+		
 		mov 		ah, 08h				; Guarda o Caracter que está na posição do Cursor
 		mov			bh,0				; numero da página
 		int			10h
@@ -1029,7 +1034,7 @@ IMPRIME:
 		je			fim_jogo
 
 		mov			ah, 02h
-		mov			dl, '('			; Coloca AVATAR1
+		mov			dl, '('				; Coloca AVATAR1
 		int			21H
 		
 		mov 		ah, head_x
@@ -1095,7 +1100,7 @@ ESTEND:
 		mov			direccao, 1
 		jmp			LER_SETA
 
-BAIXO:		
+BAIXO:
 		cmp			al,50h
 		jne			ESQUERDA
 		cmp			direccao, 1
@@ -1375,12 +1380,20 @@ add_apple proc
 	; mov		ah, posy
 	; mov		posya, ah
 
+generate_position:
 	call 	CalcAleat
 	xor		dx, dx
 	xor		bx, bx
 	call	valid_Xcoord		; obter uma posicao valida no gameboard
 	call	valid_Ycoord
 	goto_xy	posx, posy			; colocar o cursor nessa posicao
+	
+	mov		ah, 08H
+	mov		bh, 0				; le o caracter que esta na posicao atual do cursor
+	int		10h
+
+	cmp		al, '('
+	je		generate_position  ; se a maca for gerada estiver em cima da cobra
 
 	xor		cx, cx
 	xor		ax, ax
@@ -1417,10 +1430,94 @@ maca_verde_0:
 fim_add:
 	ret
 add_apple endp
-
-
 ; :::::::::::::::::: Adiciona Macas ::::::::::::::::::
 
+; :::::::::::::::::: Adiciona Ratos ::::::::::::::::::
+add_ratos proc
+	cmp		nr_ratos, 0
+	je		add_rato
+	jmp		fim_add_1
+
+add_rato:
+	call	CalcAleat
+	call	valid_Xcoord
+	call	CalcAleat
+	call	valid_Ycoord
+	xor		al, al
+	mov		al, posx
+	mov		ah, posy
+	mov		rato_x, al
+	mov		rato_y, ah
+	goto_xy posx, posy
+	mov		ah, 02H
+	mov		dl, 'R'
+	int		21H
+	inc		posx
+	goto_xy posx, posy
+	mov		ah, 02H
+	mov		dl, 'R'
+	int		21H
+	dec 	posx
+	goto_xy posx, posy
+	mov		bl, 1
+	mov		nr_ratos, bl
+
+	mov		ah, 2ch			; tempo do sistema
+	int		21h
+
+	mov		al, dh
+	mov		bl, 4
+	mul		bl
+	xor		bx, bx
+	mov		bl, 60
+	div		bl
+	mov		tp_vida, al
+
+fim_add_1:
+	ret
+
+add_ratos endp
+; :::::::::::::::::: Adiciona Ratos ::::::::::::::::::
+verifica_rato proc
+	push ax
+	push bx
+	push dx
+	xor	ax, ax
+	mov	ah, 2ch
+	int	21H
+
+	mov al, dh
+	mov bl, 4
+	mul	bl
+	xor	bx, bx
+	mov	bl, 60
+	div	bl
+	xor	bx, bx
+	mov bl, tp_vida
+	sub	al, bl
+	cmp	al, 0
+	jbe	mata_rato
+	jmp	fim_1
+
+mata_rato:
+	goto_xy rato_x, rato_y
+	mov	ah, 02H
+	mov	dl, ' '
+	int	21H
+	mov	bl, rato_x
+	mov	posxa, bl
+	inc	posxa
+	goto_xy posxa, rato_y
+	mov	ah, 02H
+	mov	dl, ' '
+	int 21H
+	goto_xy posx, posy
+fim_1:
+	pop ax
+	pop	bx
+	pop	cx
+	ret
+verifica_rato endp
 ; :::::::::::::::::: Start Game ::::::::::::::::::
 start_game proc
 	; lea		dx, ClassicGame
@@ -1468,7 +1565,10 @@ hare_level:
 	mov 	tail_y, al
 	mov  	tam, 0
 	mov 	direccao, 3
-	
+	;call	add_apple
+	call	add_ratos
+	xor		ax, ax
+	mov		al, tp_vida
 	call 	move_snake
 	cmp		al, 1Bh		; considerando que sempre o jogo acaba o jogador perdeu
 	call	are_you_sure_about_that
@@ -1528,7 +1628,6 @@ INICIO:
 	MOV			ES,AX			
 	CALL 		clear_screen
 	call		menu_controller
-	call		changeBoard
 fim:
 	call clear_screen	
 	mov     ah,4ch
