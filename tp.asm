@@ -737,7 +737,7 @@ get_menu_option endp
 move_snake PROC
 CICLO:
 	call 		dir_vector
-	goto_xy		head_x,head_y		; Vai para nova possição
+	goto_xy		head_x,head_y		; Vai para nova posição
 	mov 		ah, 08h				; Guarda o Caracter que está na posição do Cursor
 	mov			bh,0				; numero da página
 	int			10h
@@ -760,6 +760,7 @@ maca_verde:
 	;call	mostra_pontuacao 	; Mostra prontuação
 	call 	add_apple
 	inc 	maca
+	call 	limpa_maca
 	jmp 	cont_ciclo
 
 maca_madura:
@@ -772,6 +773,7 @@ maca_madura:
 	call 	add_apple
 	inc	 	maca
 	inc	 	maca
+	call 	limpa_maca
 	jmp 	cont_ciclo
 
 rato:
@@ -792,7 +794,6 @@ cont_ciclo:
 
 	;; Limpar o rasto da cabeça da cobra
 
-									; MUDAR ISTO PARA APAGAR RASTO DA CAUDA EM VEZ DA CABEÇA, TALVEZ?
 		goto_xy		tail_x,tail_y		; Vai para a posição anterior do cursor
 		mov			ah, 02h
 		mov			dl, ' ' 		; Coloca ESPAÇO
@@ -805,12 +806,13 @@ cont_ciclo:
 		mov			dl, ' '			;  Coloca ESPAÇO
 		int			21H	
 		call 		move_tail
-		goto_xy		head_x,head_y		; Vai para posição do cursor
+
 
 
 IMPRIME:
 
 	;; Atualizar a cabeça da cobra
+		goto_xy		head_x,head_y		; Vai para posição do cursor
 		mov 		ah, 08h				; Guarda o Caracter que está na posição do Cursor
 		mov			bh,0				; numero da página
 		int			10h
@@ -880,7 +882,7 @@ verifica_3:
 ESTEND:		
 		cmp 		al,48h
 		jne			BAIXO
-		cmp			direccao, 3
+		cmp			snake_dir[0], 3
 		je			LER_SETA
 		mov			direccao, 1
 		jmp			LER_SETA
@@ -888,7 +890,7 @@ ESTEND:
 BAIXO:		
 		cmp			al,50h
 		jne			ESQUERDA
-		cmp			direccao, 1
+		cmp			snake_dir[0], 1
 		je			LER_SETA
 		mov			direccao, 3
 		jmp			LER_SETA
@@ -896,7 +898,7 @@ BAIXO:
 ESQUERDA:
 		cmp			al,4Bh
 		jne			DIREITA
-		cmp			direccao, 0
+		cmp			snake_dir[0], 0
 		je			LER_SETA
 		mov			direccao, 2
 		jmp			LER_SETA
@@ -904,7 +906,7 @@ ESQUERDA:
 DIREITA:
 		cmp			al,4Dh
 		jne			LER_SETA 
-		cmp			direccao, 2
+		cmp			snake_dir[0], 2
 		je			LER_SETA
 		mov			direccao, 0
 		jmp			LER_SETA
@@ -922,47 +924,65 @@ dec_maca:
 move_snake ENDP
 
 dir_vector PROC
-xor si,si
-xor ax,ax
-mov al, tam
-mov cx, ax
-inc cx					; como tam = tamanho da cobra - 1,  inc no cx
-mov al, direccao
-ccl:
-xchg al, snake_dir[si]		; al = direçao que a 'peça' seguinte mais perto da cauda vai ter,  snake_dir(si) = dir que a posição anterior tinha
-inc si						; basicamente AL=0   snake dir=3,1,3,2,1   ->   snake_dir=0,3,1,3,2
-loop ccl
-ret
+	xor si,si
+	xor ax,ax
+	mov al, tam
+	mov cx, ax
+	inc cx					; como tam = tamanho da cobra - 1,  inc no cx
+	mov al, direccao
+	ccl:
+	xchg al, snake_dir[si]		; al = direçao que a 'peça' seguinte mais perto da cauda vai ter,  snake_dir(si) = dir que a posição anterior tinha
+	inc si						; basicamente AL=0   snake dir=3,1,3,2,1   ->   snake_dir=0,3,1,3,2
+	loop ccl
+	ret
 dir_vector endp
 
 move_tail proc
-xor ax,ax
-mov al,tam
-mov si,ax
-mov al, snake_dir[si]		;al passa a ter direção que a cauda se deve mexer
-cmp al, 0 ;direita
-je tail_dir
-cmp al, 1 ;cima
-je tail_cima
-cmp al, 2 ;esquerda
-je tail_esq
-cmp al, 3 ;baixo
-je tail_baix
-ret
-tail_dir:
-add tail_x,2			;mexe para direita
-jmp fim_tail
-tail_cima:
-dec tail_y				;mexe para cima
-jmp fim_tail
-tail_esq:				
-sub tail_x, 2			;mexe para esquerda
-jmp fim_tail
-tail_baix:				
-inc tail_y				;mexe para baixo
-fim_tail:
-ret
+	xor ax,ax
+	mov al,tam
+	mov si,ax
+	mov al, snake_dir[si]		;al passa a ter direção que a cauda se deve mexer
+	cmp al, 0 ;direita
+	je tail_dir
+	cmp al, 1 ;cima
+	je tail_cima
+	cmp al, 2 ;esquerda
+	je tail_esq
+	cmp al, 3 ;baixo
+	je tail_baix
+	ret
+	tail_dir:
+	add tail_x,2			;mexe para direita
+	jmp fim_tail
+	tail_cima:
+	dec tail_y				;mexe para cima
+	jmp fim_tail
+	tail_esq:				
+	sub tail_x, 2			;mexe para esquerda
+	jmp fim_tail
+	tail_baix:				
+	inc tail_y				;mexe para baixo
+	fim_tail:
+	ret
 move_tail endp
+
+limpa_maca proc
+
+	xor ax,ax
+	xor bx,bx
+	mov al, 160
+	mul head_y
+	mov si,ax
+	mov al, 2
+	mul head_x
+	mov bx,ax
+	mov dx, 3720h
+	mov es:[si][bx], dx
+	mov es:[si][bx+2], dx
+
+	ret
+
+limpa_maca endp
 ; :::::::::::::::::: Movimento da Cobra ::::::::::::::::::
 
 ; :::::::::::::::::: Mostra Pontuação ::::::::::::::::::
@@ -1057,13 +1077,17 @@ CalcAleat proc near
 	push dx
 	push cx
 
-	mov ah, 2dh
+	mov ah, 2Ch
 	int 21H
-	add dx, ultimo_num_aleat
+	xor ax,ax
+	mov al, dh
+	xor dh, dh
+	mul dx
+	xchg dx,ax
 	xchg dl, dh
 	mov ax, 65521
 	mul dx
-	xchg al, ah
+	xchg al,ah
 	mov ultimo_num_aleat, ax
 
 
@@ -1171,10 +1195,12 @@ add_apple proc
 	; mov		ah, posy
 	; mov		posya, ah
 
-	call 	CalcAleat
+
 	xor		dx, dx
-	xor		bx, bx
-	call	valid_Xcoord		; obter uma posicao valida no gameboard
+	xor		bx, bx	
+	call 	CalcAleat
+	call	valid_Xcoord		; obter uma posicao valida no gameboard	
+	call 	CalcAleat
 	call	valid_Ycoord
 	goto_xy	posx, posy			; colocar o cursor nessa posicao
 
@@ -1188,27 +1214,54 @@ add_apple proc
 	cmp		ah, 0
 	je		maca_verde_0
 
-	mov		ah, 2
-	mov		dl, 'M'				; imprimir a maca
-	int		21h
-	inc 	posx
-	xor		ax, ax
-	mov		ah, 2
-	mov		dl, 'M'
-	int 	21h
-	goto_xy	head_x, head_y
+	xor ax,ax
+	xor bx,bx
+	mov al, 160
+	mul posy
+	mov si,ax
+	mov al, 2
+	mul posx
+	mov bx,ax
+	mov dl,'M'
+	mov dh, 45h
+	mov es:[si][bx], dx
+	mov es:[si][bx+2], dx
 	jmp fim_add
 
+	; mov		ah, 2
+	; mov		dl, 'M'				; imprimir a maca
+	; int		21h
+	; inc 	posx
+	; xor		ax, ax
+	; mov		ah, 2
+	; mov		dl, 'M'
+	; int 	21h
+	; goto_xy	head_x, head_y
+	; jmp fim_add
+
 maca_verde_0:
-	mov		ah, 2
-	mov		dl, 'V'				; imprimir a maca
-	int		21h
-	inc 	posx
-	xor		ax, ax
-	mov		ah, 2
-	mov		dl, 'V'
-	int 	21h
-	goto_xy	head_x, head_y
+	xor ax,ax
+	xor bx,bx
+	mov al, 160
+	mul posy
+	mov si,ax
+	mov al, 2
+	mul posx
+	mov bx,ax
+	mov dl,'V'
+	mov dh, 23h
+	mov es:[si][bx], dx
+	mov es:[si][bx+2], dx
+	
+	; mov		ah, 2
+	; mov		dl, 'V'				; imprimir a maca
+	; int		21h
+	; inc 	posx
+	; xor		ax, ax
+	; mov		ah, 2
+	; mov		dl, 'V'
+	; int 	21h
+	; goto_xy	head_x, head_y
 
 fim_add:
 	ret
