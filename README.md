@@ -1,7 +1,4 @@
 # SnakeGame 🐍
-temos de fazer push & pops no inicio dos procs para nao perder informacao
-Temos de ter a certeza que é isso que queremos fazer tho, porque existem rotinas
-que devolvem pelos registos
 ## TaskList
 - [ ] Definir tarefas
 
