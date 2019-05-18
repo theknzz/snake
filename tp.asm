@@ -152,7 +152,7 @@ DADOS	SEGMENT PARA 'DATA'
 								db	"                                                                            $",13,10
 
 
-			StatsView			db	"                                                                             ",13,10
+			StatsMenuView		db	"                                                                             ",13,10
 								db	"                                                                             ",13,10
 								db	"                  dMMMMb  .aMMMb  dMMMMb  .aMMMMP dMMMMMP dMMMMb             ",13,10
 								db	"                 dMP VMP dMP dMP dMP dMP dMP     dMP     dMP.dMP             ",13,10
@@ -167,15 +167,69 @@ DADOS	SEGMENT PARA 'DATA'
 								db 	"              dMP dMP  VMMMP   VMMMP  dMMMMP  dMMMMMP dMMMMMP                ",13,10
 								db	"                                                                             ",13,10
 								db	"                                                                             ",13,10
-								db	"                   o---------------------------------------o                 ",13,10
-								db	"                   |       1       |       2       |   3   |                 ",13,10
-								db	"                   |  Game history |     Stats     |  Back |                 ",13,10
-								db 	"                   o---------------------------------------o                 ",13,10
+								db	"                    o-----------------------------------o                    ",13,10
+								db	"                    |       1        |    2    |   3    |                    ",13,10
+								db	"                    |  Game history  |  Stats  |  Back  |                    ",13,10
+								db 	"                    o-----------------------------------o                    ",13,10
 								db	"                                                                             ",13,10
 								db 	"      Insert Option >                                                        ",13,10
 								db	"                                                                             ",13,10
 								db	"                                                                             ",13,10
 								db	"                                                                             ",13,10
+								db	"                                                                            $",13,10
+
+			GameHistoryView		db	"                                                                             ",13,10
+								db	"                                                                             ",13,10
+								db	"                  dMMMMb  .aMMMb  dMMMMb  .aMMMMP dMMMMMP dMMMMb             ",13,10
+								db	"                 dMP VMP dMP dMP dMP dMP dMP     dMP     dMP.dMP             ",13,10
+								db  "                dMP dMP dMMMMMP dMP dMP dMP MMP dMMMP   dMMMMK               ",13,10
+								db 	"               dMP.aMP dMP dMP dMP dMP dMP.dMP dMP     dMP AMF               ",13,10
+								db 	"              dMMMMP  dMP dMP dMP dMP  VMMMP  dMMMMMP dMP dMP                ",13,10
+								db  "                                                                             ",13,10
+								db 	"                  dMMMMb  .aMMMb  .aMMMb  dMMMMb  dMP     dMMMMMP            ",13,10
+								db 	"                 dMP dMP dMP dMP dMP dMP dMP VMP dMP     dMP                 ",13,10
+								db 	"                dMP dMP dMP dMP dMP dMP dMP dMP dMP     dMMMP                ",13,10
+								db 	"               dMP dMP dMP.aMP dMP.aMP dMP.aMP dMP     dMP                   ",13,10
+								db 	"              dMP dMP  VMMMP   VMMMP  dMMMMP  dMMMMMP dMMMMMP                ",13,10
+								db	"                                                                             ",13,10
+								db	"                                                                             ",13,10
+								db	"                   > Game History                                            ",13,10
+								db	"                                                                             ",13,10
+								db	"                                                                             ",13,10
+								db 	"                                                                             ",13,10
+								db	"                                                                             ",13,10
+								db 	"                                                                             ",13,10
+								db	"                                                                             ",13,10
+								db	"                                                                             ",13,10
+								db	"                                                                             ",13,10
+								db	"                                                                            $",13,10
+
+
+
+			StatsView 			db	"                                                                             ",13,10
+								db	"                                                                             ",13,10
+								db	"                  dMMMMb  .aMMMb  dMMMMb  .aMMMMP dMMMMMP dMMMMb             ",13,10
+								db	"                 dMP VMP dMP dMP dMP dMP dMP     dMP     dMP.dMP             ",13,10
+								db  "                dMP dMP dMMMMMP dMP dMP dMP MMP dMMMP   dMMMMK               ",13,10
+								db 	"               dMP.aMP dMP dMP dMP dMP dMP.dMP dMP     dMP AMF               ",13,10
+								db 	"              dMMMMP  dMP dMP dMP dMP  VMMMP  dMMMMMP dMP dMP                ",13,10
+								db  "                                                                             ",13,10
+								db 	"                  dMMMMb  .aMMMb  .aMMMb  dMMMMb  dMP     dMMMMMP            ",13,10
+								db 	"                 dMP dMP dMP dMP dMP dMP dMP VMP dMP     dMP                 ",13,10
+								db 	"                dMP dMP dMP dMP dMP dMP dMP dMP dMP     dMMMP                ",13,10
+								db 	"               dMP dMP dMP.aMP dMP.aMP dMP.aMP dMP     dMP                   ",13,10
+								db 	"              dMP dMP  VMMMP   VMMMP  dMMMMP  dMMMMMP dMMMMMP                ",13,10
+								db	"                                                                             ",13,10
+								db	"                                                                             ",13,10
+								db	"                Stats:                                                       ",13,10
+								db 	"                                                                             ",13,10								
+								db	"                  > Nr. games:                                               ",13,10  ; (31, 17)
+								db	"                  > Best play:                                               ",13,10  ; (31, 18)
+								db 	"                  > Worst play:                                              ",13,10  ; (32, 19)
+								db	"                  > Average play:                                            ",13,10  ; (34, 20)
+								db	"                                                                             ",13,10
+								db	"                      Press any key to get back to menu...                   ",13,10
+								db	"                      (Debbug - needs to be implemented)                     ",13,10
 								db	"                                                                            $",13,10
 
 
@@ -289,6 +343,16 @@ DADOS	SEGMENT PARA 'DATA'
 		slug_label		db		"SLUG$"
 		hare_label		db		"HARE$"
 		cheetah_label	db		"CHEETAH$"
+
+		conta_MM		db		0
+		conta_MV		db		0
+		conta_RD		db		0
+		game_id			db		000
+		
+		nr_games		db		"10$"
+		best_play 		db 		"100$"
+		average_play	db		"50$"
+		worst_play		db		"20$"
 
 		difficulty		db		? 	; (?) Multiplier para pontuação
 		conta_maca		db		0
@@ -587,25 +651,54 @@ classic_game:
 		jmp		show_main_menu
 
 stats:
-		; lea		dx, ShowStats
-		; call	Imp_Fich
-		lea		dx, StatsView
+		lea		dx, StatsMenuView			; coloca o ponteiro para a string em dx
 		mov		ah, 09h
-		int 	21h
-		call 	get_menu_option
+		int 	21h							; chama a interrupcao para imprimir string em stdout
+		call 	get_menu_option				; recebe input do teclado
 
 		; Game History
 		cmp		al, '1'
-		jmp 	show_main_menu
+		je	 	game_history
 
 		; Statistical Values
 		cmp		al, '2'
-		jmp		show_main_menu
+		je		game_stats
 
 		cmp		al, '3'
-		jmp 	show_main_menu
+		je	 	show_main_menu
 
 		call	wrong_input
+		jmp		stats
+
+game_history:
+		lea		dx, GameHistoryView
+		mov		ah, 09H
+		int		21H
+		call	get_menu_option
+		jmp		stats
+
+game_stats:
+		lea		dx, StatsView
+		mov		ah, 09H
+		int		21H
+
+		goto_xy 31, 17
+		lea		dx, nr_games
+		mov		ah, 09H
+		int		21H
+		goto_xy	31, 18
+		lea		dx, best_play
+		mov		ah, 09H
+		int		21H
+		goto_xy	32, 19
+		lea		dx, worst_play
+		mov		ah, 09H
+		int		21H
+		goto_xy	34, 20
+		lea		dx, average_play
+		mov		ah, 09H
+		int		21H
+		call	get_menu_option
 		jmp		stats
 
 madeby:
