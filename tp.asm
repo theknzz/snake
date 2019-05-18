@@ -25,8 +25,8 @@ DADOS	SEGMENT PARA 'DATA'
 	; :::::::::::::::::: File Handles ::::::::::::::::::
 
 	; :::::::::::::::::: Handles ::::::::::::::::::
-		pontos			db		0
-		str_aux			db		10 dup(?)
+		pontos			db		255
+		str_aux			db		10 dup('$')
 	; :::::::::::::::::: Handles ::::::::::::::::::
 
 	; :::::::::::::::::: Warnings ::::::::::::::::::
@@ -286,7 +286,10 @@ DADOS	SEGMENT PARA 'DATA'
 								db	"                                                                             ",13,10
 								db	"                                                                            $",13,10
 
-	; :::::::::::::::::: Views ::::::::::::::::::
+		slug_label		db		"SLUG$"
+		hare_label		db		"HARE$"
+		cheetah_label	db		"CHEETAH$"
+
 		difficulty		db		? 	; (?) Multiplier para pontuação
 		conta_maca		db		0
 
@@ -295,8 +298,10 @@ DADOS	SEGMENT PARA 'DATA'
 		POSx			db		40	; POSx pode ir [1..80]	
 		POSya			db		5	; Posição anterior de y
 		POSxa			db		10	; Posição anterior de x
-		POSxPont		db		30
-		POSyPont		db		23
+		POSxPont		db		19
+		POSyPont		db		24
+		posxlevel		db 		52
+		posylevel		db		24
 		
 
 		PASSA_T			dw		0
@@ -636,7 +641,6 @@ get_menu_option endp
 move_snake PROC
 CICLO:
 	call 		dir_vector
-	;call		mostra_pontuacao 	; Mostra prontuação
 	goto_xy		head_x,head_y		; Vai para nova possição
 	mov 		ah, 08h				; Guarda o Caracter que está na posição do Cursor
 	mov			bh,0				; numero da página
@@ -654,11 +658,13 @@ CICLO:
 	jmp cont_ciclo
 
 maca_verde:
+	call	mostra_pontuacao 	; Mostra prontuação
 	call 	add_apple
 	inc 	maca
 	jmp 	cont_ciclo
 
 maca_madura:
+	call	mostra_pontuacao 	; Mostra prontuação
 	call 	add_apple
 	inc	 	maca
 	inc	 	maca
@@ -848,13 +854,48 @@ move_tail endp
 
 ; :::::::::::::::::: Mostra Pontuação ::::::::::::::::::
 mostra_pontuacao proc
-	goto_xy		POSxPont,	POSyPont 	; vai para a posição da pontuação
-	xor			dx,	dx
-	mov			dl, pontos
-	mov			str_aux[0],	dl    	 	; passar o nr para a string aux
-	mov			str_aux[1], '$'			; pq a interrupcao procura o fim da string pelo '$'
-	;mostra		str_aux					; syntax error ?
-	goto_xy 	POSX, POSY				; volta para a posição antiga
+	push	ax
+	push	bx
+	push	cx
+	push	dx
+	xor		si, si
+	xor		dx, dx
+	xor		ax, ax
+	xor		bx, bx
+	mov		bl, 10
+	mov		al, pontos
+
+break_chars:
+	xor		ah, ah
+	div		bl					; ah fica com o caracter a converter para ascii
+	cmp		ah, 0
+	je		display
+	add		ah, 30h				; para converter para ascii
+	mov		str_aux[si], ah
+	inc		si
+	loop	break_chars
+	
+display:
+	dec 	si
+	mov		cx, si
+	goto_xy	posxpont, posypont
+display_pont:
+	xor		dl, dl
+	mov		ah, 02h
+	mov		dl, str_aux[si]
+	int		21h
+	cmp		si, 0
+	je		fim_mostra
+	dec		si
+	jmp		display_pont
+
+fim_mostra:
+	goto_xy	posx, posy  		; será que é para aqui que ele volta, ou volta para a cabeça ?
+	pop		ax
+	pop		bx
+	pop		cx
+	pop		dx
+	ret
 mostra_pontuacao endp
 ; :::::::::::::::::: Mostra Pontuação ::::::::::::::::::
 
@@ -995,13 +1036,15 @@ add_apple proc
 	call	valid_Ycoord
 	goto_xy	posx, posy			; colocar o cursor nessa posicao
 
-	; xor		cx, cx
-	; xor		ax, ax
-	; mov		ax, ultimo_num_aleat
-	; mov		cl, 2
-	; div		cl
-	; cmp		ah, 0
-	; jne		maca_verde_0
+	xor		cx, cx
+	xor		ax, ax
+	xor		dx, dx
+	mov		dx, ultimo_num_aleat
+	mov		al, dl
+	mov		cl, 2
+	div		cl
+	cmp		ah, 0
+	je		maca_verde_0
 
 	mov		ah, 2
 	mov		dl, 'M'				; imprimir a maca
@@ -1012,7 +1055,7 @@ add_apple proc
 	mov		dl, 'M'
 	int 	21h
 	goto_xy	posxa, posya
-	;jmp fim_add
+	jmp fim_add
 
 maca_verde_0:
 	mov		ah, 2
@@ -1040,6 +1083,29 @@ start_game proc
 	mov		ah, 09h
 	int		21H
 
+	cmp		factor, 100
+	je		slug_level
+	cmp		factor, 50
+	je		hare_level
+	goto_xy	posxlevel, posylevel
+	lea		dx, cheetah_label
+	mov		ah,	09h
+	int		21h
+	jmp		@@asd
+
+slug_level:
+	goto_xy	posxlevel, posylevel
+	lea		dx, slug_label
+	mov		ah,	09h
+	int		21h
+	jmp		@@asd
+hare_level:
+	goto_xy	posxlevel, posylevel
+	lea		dx, hare_label
+	mov		ah,	09h
+	int		21h
+
+@@asd:
 	xor		ax,	ax
 	xor		bx, bx
 	call 	CalcAleat
@@ -1115,6 +1181,7 @@ INICIO:
 	MOV			ES,AX			; (?)	; ES indica segmento de memória de VIDEO
 	CALL 		clear_screen
 	call		menu_controller
+	
 fim:
 	call clear_screen	
 	mov     ah,4ch
