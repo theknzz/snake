@@ -5,15 +5,15 @@
 DADOS	SEGMENT PARA 'DATA'
 
 	; :::::::::::::::::: Files in Memory ::::::::::::::::::
-		Menu            db      './files/menu.txt',0
-		newgame			db		'./files/newGame.txt',0
-		ClassicGame		db		'./files/moldura.txt',0
-		cDifficulty		db		'./files/choose.txt',0
-		ShowStats		db		'./files/stats.txt',0
-		Credits			db		'./files/credits.txt',0
-		GameOver		db		'./files/gameOver.txt',0
-		AreUSure		db		'./files/YouSure.txt',0
-		TutorialFile	db 		'./files/tutorial.txt',0
+		; Menu            db      './files/menu.txt',0
+		; newgame			db		'./files/newGame.txt',0
+		; ClassicGame		db		'./files/moldura.txt',0
+		; cDifficulty		db		'./files/choose.txt',0
+		; ShowStats		db		'./files/stats.txt',0
+		; Credits			db		'./files/credits.txt',0
+		; GameOver		db		'./files/gameOver.txt',0
+		; AreUSure		db		'./files/YouSure.txt',0
+		; TutorialFile	db 		'./files/tutorial.txt',0
     ; :::::::::::::::::: Ficheiros em Memória ::::::::::::::::::
 
 	; :::::::::::::::::: File Handles ::::::::::::::::::
@@ -34,7 +34,7 @@ DADOS	SEGMENT PARA 'DATA'
 	; :::::::::::::::::: Warnings ::::::::::::::::::
 
 	; :::::::::::::::::: Cobra Utils ::::::::::::::::::
-		tam				db 		0	; tamanho da cobra, menos 1 (facilita o uso do vetor)
+		tam				db 		20	; tamanho da cobra, menos 1 (facilita o uso do vetor)
 		snake_dir		db		620 dup(?) ; vetor de direçoes para cada "peça" da cobra
 		head_x			db		?
 		head_y			db		?	
@@ -42,7 +42,251 @@ DADOS	SEGMENT PARA 'DATA'
 		tail_y			db		?
 	; :::::::::::::::::: Cobra Utils ::::::::::::::::::
 
+	; :::::::::::::::::: Views ::::::::::::::::::
+				GameBoardView	db	"                                                                              ",13,10
+								db	"                          DANGER NOODLE                                ______ ",13,10
+								db	"  ##################################################################  |      |",13,10
+								db	"  ##                                                              ##  |      |",13,10
+								db	"  ##                                                              ##  |      |",13,10
+								db	"  ##                                                              ##  |      |",13,10
+								db	"  ##                                                              ##  |      |",13,10
+								db	"  ##                                                              ##  |      |",13,10
+								db	"  ##                                                              ##  |      |",13,10
+								db	"  ##                  MM                                          ##  |      |",13,10
+								db	"  ##                                                              ##  |      |",13,10
+								db	"  ##                                                              ##  |      |",13,10
+								db	"  ##                                                              ##  |______|",13,10
+								db	"  ##                                                              ##          ",13,10
+								db	"  ##                                                              ##          ",13,10
+								db	"  ##                                                              ##          ",13,10
+								db	"  ##                                                              ##          ",13,10
+								db	"  ##                                                              ##          ",13,10
+								db	"  ##                                                              ##          ",13,10
+								db	"  ##                                                              ##          ",13,10
+								db	"  ##                                              MM              ##          ",13,10
+								db	"  ##                                                              ##          ",13,10
+								db	"  ##                                                              ##          ",13,10
+								db	"  ##################################################################          ",13,10
+								db	"            SCORE:                           LEVEL:                          $",13,10
+								
 
+			MainMenuView		db	"                                                                             ",13,10
+								db	"                                                                             ",13,10
+								db	"                  dMMMMb  .aMMMb  dMMMMb  .aMMMMP dMMMMMP dMMMMb             ",13,10
+								db	"                 dMP VMP dMP dMP dMP dMP dMP     dMP     dMP.dMP             ",13,10
+								db  "                dMP dMP dMMMMMP dMP dMP dMP MMP dMMMP   dMMMMK               ",13,10
+								db 	"               dMP.aMP dMP dMP dMP dMP dMP.dMP dMP     dMP AMF               ",13,10
+								db 	"              dMMMMP  dMP dMP dMP dMP  VMMMP  dMMMMMP dMP dMP                ",13,10
+								db  "                                                                             ",13,10
+								db 	"                  dMMMMb  .aMMMb  .aMMMb  dMMMMb  dMP     dMMMMMP            ",13,10
+								db 	"                 dMP dMP dMP dMP dMP dMP dMP VMP dMP     dMP                 ",13,10
+								db 	"                dMP dMP dMP dMP dMP dMP dMP dMP dMP     dMMMP                ",13,10
+								db 	"               dMP dMP dMP.aMP dMP.aMP dMP.aMP dMP     dMP                   ",13,10
+								db 	"              dMP dMP  VMMMP   VMMMP  dMMMMP  dMMMMMP dMMMMMP                ",13,10
+								db	"                                                                             ",13,10
+								db	"                                                                             ",13,10
+								db 	"      o---------------------------------------------------------------o      ",13,10
+								db 	"      |      0       |     1      |       2       |     3     |   4   |      ",13,10
+								db 	"      | How to play? |  New game  |   Show stats  |  Credits  |  Exit |      ",13,10
+								db 	"      o---------------------------------------------------------------o      ",13,10
+								db	"                                                                             ",13,10
+								db 	"      Insert Option >                                                        ",13,10
+								db	"                                                                             ",13,10
+								db	"                                                                             ",13,10
+								db	"                                                                             ",13,10
+								db	"                                                                            $",13,10
+
+
+		ChooseDifficultyView 	db	"                                                                             ",13,10
+								db	"                                                                             ",13,10
+								db	"                  dMMMMb  .aMMMb  dMMMMb  .aMMMMP dMMMMMP dMMMMb             ",13,10
+								db	"                 dMP VMP dMP dMP dMP dMP dMP     dMP     dMP.dMP             ",13,10
+								db  "                dMP dMP dMMMMMP dMP dMP dMP MMP dMMMP   dMMMMK               ",13,10
+								db 	"               dMP.aMP dMP dMP dMP dMP dMP.dMP dMP     dMP AMF               ",13,10
+								db 	"              dMMMMP  dMP dMP dMP dMP  VMMMP  dMMMMMP dMP dMP                ",13,10
+								db  "                                                                             ",13,10
+								db 	"                  dMMMMb  .aMMMb  .aMMMb  dMMMMb  dMP     dMMMMMP            ",13,10
+								db 	"                 dMP dMP dMP dMP dMP dMP dMP VMP dMP     dMP                 ",13,10
+								db 	"                dMP dMP dMP dMP dMP dMP dMP dMP dMP     dMMMP                ",13,10
+								db 	"               dMP dMP dMP.aMP dMP.aMP dMP.aMP dMP     dMP                   ",13,10
+								db 	"              dMP dMP  VMMMP   VMMMP  dMMMMP  dMMMMMP dMMMMMP                ",13,10
+								db	"                                                                             ",13,10
+								db	"                                                                             ",13,10
+								db  "                    o-------------------------------------o                  ",13,10
+								db  "                    |   1   |    2   |     3     |    4   |                  ",13,10
+								db 	"                    | Slug  |  Hare  |  Cheetah  |  Back  |                  ",13,10
+								db 	"                    o-------------------------------------o                  ",13,10
+								db	"                                                                             ",13,10
+								db 	"      Insert Option >                                                        ",13,10
+								db	"                                                                             ",13,10
+								db	"                                                                             ",13,10
+								db	"                                                                             ",13,10
+								db	"                                                                            $",13,10
+
+
+
+			CreditsView			db	"                                                                             ",13,10
+								db	"                                                                             ",13,10
+								db	"                  dMMMMb  .aMMMb  dMMMMb  .aMMMMP dMMMMMP dMMMMb             ",13,10
+								db	"                 dMP VMP dMP dMP dMP dMP dMP     dMP     dMP.dMP             ",13,10
+								db  "                dMP dMP dMMMMMP dMP dMP dMP MMP dMMMP   dMMMMK               ",13,10
+								db 	"               dMP.aMP dMP dMP dMP dMP dMP.dMP dMP     dMP AMF               ",13,10
+								db 	"              dMMMMP  dMP dMP dMP dMP  VMMMP  dMMMMMP dMP dMP                ",13,10
+								db  "                                                                             ",13,10
+								db 	"                  dMMMMb  .aMMMb  .aMMMb  dMMMMb  dMP     dMMMMMP            ",13,10
+								db 	"                 dMP dMP dMP dMP dMP dMP dMP VMP dMP     dMP                 ",13,10
+								db 	"                dMP dMP dMP dMP dMP dMP dMP dMP dMP     dMMMP                ",13,10
+								db 	"               dMP dMP dMP.aMP dMP.aMP dMP.aMP dMP     dMP                   ",13,10
+								db 	"              dMP dMP  VMMMP   VMMMP  dMMMMP  dMMMMMP dMMMMMP                ",13,10
+								db	"                                                                             ",13,10
+								db	"                                                                             ",13,10
+								db 	"                        Implemented by:                                      ",13,10
+								db	"                            > Andre Coelho   - 21270347                      ",13,10
+								db 	"                            > Joaquim Santos - 21270351                      ",13,10
+								db	"                                                                             ",13,10
+								db	"                                                                             ",13,10
+								db 	"                    Press any key to get back to the main menu...            ",13,10
+								db	"                                                                             ",13,10
+								db	"                                                                             ",13,10
+								db	"                                                                             ",13,10
+								db	"                                                                            $",13,10
+
+
+			StatsView			db	"                                                                             ",13,10
+								db	"                                                                             ",13,10
+								db	"                  dMMMMb  .aMMMb  dMMMMb  .aMMMMP dMMMMMP dMMMMb             ",13,10
+								db	"                 dMP VMP dMP dMP dMP dMP dMP     dMP     dMP.dMP             ",13,10
+								db  "                dMP dMP dMMMMMP dMP dMP dMP MMP dMMMP   dMMMMK               ",13,10
+								db 	"               dMP.aMP dMP dMP dMP dMP dMP.dMP dMP     dMP AMF               ",13,10
+								db 	"              dMMMMP  dMP dMP dMP dMP  VMMMP  dMMMMMP dMP dMP                ",13,10
+								db  "                                                                             ",13,10
+								db 	"                  dMMMMb  .aMMMb  .aMMMb  dMMMMb  dMP     dMMMMMP            ",13,10
+								db 	"                 dMP dMP dMP dMP dMP dMP dMP VMP dMP     dMP                 ",13,10
+								db 	"                dMP dMP dMP dMP dMP dMP dMP dMP dMP     dMMMP                ",13,10
+								db 	"               dMP dMP dMP.aMP dMP.aMP dMP.aMP dMP     dMP                   ",13,10
+								db 	"              dMP dMP  VMMMP   VMMMP  dMMMMP  dMMMMMP dMMMMMP                ",13,10
+								db	"                                                                             ",13,10
+								db	"                                                                             ",13,10
+								db	"                   o---------------------------------------o                 ",13,10
+								db	"                   |       1       |       2       |   3   |                 ",13,10
+								db	"                   |  Game history |     Stats     |  Back |                 ",13,10
+								db 	"                   o---------------------------------------o                 ",13,10
+								db	"                                                                             ",13,10
+								db 	"      Insert Option >                                                        ",13,10
+								db	"                                                                             ",13,10
+								db	"                                                                             ",13,10
+								db	"                                                                             ",13,10
+								db	"                                                                            $",13,10
+
+
+			HowToPlayView		db	"                                                                             ",13,10
+								db	"                                                                             ",13,10
+								db	"                  dMMMMb  .aMMMb  dMMMMb  .aMMMMP dMMMMMP dMMMMb             ",13,10
+								db	"                 dMP VMP dMP dMP dMP dMP dMP     dMP     dMP.dMP             ",13,10
+								db  "                dMP dMP dMMMMMP dMP dMP dMP MMP dMMMP   dMMMMK               ",13,10
+								db 	"               dMP.aMP dMP dMP dMP dMP dMP.dMP dMP     dMP AMF               ",13,10
+								db 	"              dMMMMP  dMP dMP dMP dMP  VMMMP  dMMMMMP dMP dMP                ",13,10
+								db  "                                                                             ",13,10
+								db 	"                  dMMMMb  .aMMMb  .aMMMb  dMMMMb  dMP     dMMMMMP            ",13,10
+								db 	"                 dMP dMP dMP dMP dMP dMP dMP VMP dMP     dMP                 ",13,10
+								db 	"                dMP dMP dMP dMP dMP dMP dMP dMP dMP     dMMMP                ",13,10
+								db 	"               dMP dMP dMP.aMP dMP.aMP dMP.aMP dMP     dMP                   ",13,10
+								db 	"              dMP dMP  VMMMP   VMMMP  dMMMMP  dMMMMMP dMMMMMP                ",13,10
+								db	"                                                                             ",13,10
+								db	"                                                                             ",13,10
+								db	"                               < HOW TO PLAY >                               ",13,10
+								db	"                                                                             ",13,10
+								db	"                        LEFT ARROW      to move LEFT                         ",13,10
+								db	"                        RIGHT ARROW     to move RIGHT                        ",13,10
+								db	"                        DOWN ARROW      to move DOWN                         ",13,10
+								db	"                        UP ARROW        to move UP                           ",13,10
+								db	"                                                                             ",13,10
+								db	"                    Press any key to get back to main menu...                ",13,10
+								db	"                                                                             ",13,10
+								db	"                                                                            $",13,10
+
+
+			newGameView			db	"                                                                             ",13,10
+								db	"                                                                             ",13,10
+								db	"                  dMMMMb  .aMMMb  dMMMMb  .aMMMMP dMMMMMP dMMMMb             ",13,10
+								db	"                 dMP VMP dMP dMP dMP dMP dMP     dMP     dMP.dMP             ",13,10
+								db  "                dMP dMP dMMMMMP dMP dMP dMP MMP dMMMP   dMMMMK               ",13,10
+								db 	"               dMP.aMP dMP dMP dMP dMP dMP.dMP dMP     dMP AMF               ",13,10
+								db 	"              dMMMMP  dMP dMP dMP dMP  VMMMP  dMMMMMP dMP dMP                ",13,10
+								db  "                                                                             ",13,10
+								db 	"                  dMMMMb  .aMMMb  .aMMMb  dMMMMb  dMP     dMMMMMP            ",13,10
+								db 	"                 dMP dMP dMP dMP dMP dMP dMP VMP dMP     dMP                 ",13,10
+								db 	"                dMP dMP dMP dMP dMP dMP dMP dMP dMP     dMMMP                ",13,10
+								db 	"               dMP dMP dMP.aMP dMP.aMP dMP.aMP dMP     dMP                   ",13,10
+								db 	"              dMP dMP  VMMMP   VMMMP  dMMMMP  dMMMMMP dMMMMMP                ",13,10
+								db	"                                                                             ",13,10
+								db	"                                                                             ",13,10
+								db	"                o-----------------------------------------------o            ",13,10
+								db	"                |       1       |       2       |       3       |            ",13,10
+								db	"                |    Classic    |     Bonus     |  Back to menu |            ",13,10
+								db	"                o-----------------------------------------------o            ",13,10
+								db	"                                                                             ",13,10
+								db 	"      Insert Option >                                                        ",13,10
+								db	"                                                                             ",13,10
+								db	"                                                                             ",13,10
+								db	"                                                                             ",13,10
+								db	"                                                                            $",13,10
+
+
+		YouSureAboutThatView	db	"                                                                             ",13,10
+								db	"                                                                             ",13,10
+								db	"                  dMMMMb  .aMMMb  dMMMMb  .aMMMMP dMMMMMP dMMMMb             ",13,10
+								db	"                 dMP VMP dMP dMP dMP dMP dMP     dMP     dMP.dMP             ",13,10
+								db  "                dMP dMP dMMMMMP dMP dMP dMP MMP dMMMP   dMMMMK               ",13,10
+								db 	"               dMP.aMP dMP dMP dMP dMP dMP.dMP dMP     dMP AMF               ",13,10
+								db 	"              dMMMMP  dMP dMP dMP dMP  VMMMP  dMMMMMP dMP dMP                ",13,10
+								db  "                                                                             ",13,10
+								db 	"                  dMMMMb  .aMMMb  .aMMMb  dMMMMb  dMP     dMMMMMP            ",13,10
+								db 	"                 dMP dMP dMP dMP dMP dMP dMP VMP dMP     dMP                 ",13,10
+								db 	"                dMP dMP dMP dMP dMP dMP dMP dMP dMP     dMMMP                ",13,10
+								db 	"               dMP dMP dMP.aMP dMP.aMP dMP.aMP dMP     dMP                   ",13,10
+								db 	"              dMP dMP  VMMMP   VMMMP  dMMMMP  dMMMMMP dMMMMMP                ",13,10
+								db	"                                                                             ",13,10
+								db	"                                                                             ",13,10
+								db	"                                                                             ",13,10
+								db	"                                                                             ",13,10
+								db	"                           Are you sure about that?                          ",13,10								
+								db	"                                                                             ",13,10
+								db	"             o---------o                                o---------o          ",13,10
+								db	"             | 0 - yes |                                | 1 - no  |          ",13,10
+								db	"             o---------o                                o---------o          ",13,10
+								db	"                                                                             ",13,10
+								db	"                                                                             ",13,10
+								db	"                                                                             ",13,10
+								db	"                                                                            $",13,10
+
+		GameOverView			db	"                                                                             ",13,10
+								db	"                                                                             ",13,10
+								db	"                                                                             ",13,10
+								db	"                                                                             ",13,10
+								db	"                                                                             ",13,10
+								db	"      *****                                  /**                   /**       ",13,10
+								db	"    **///**  ******   **********   *****    /**  ******   ****** ******      ",13,10
+								db  "   /**  /** //////** //**//**//** **///**   /** **////** **//// ///**/       ",13,10
+								db 	"    //******  *******  /** /** /**/*******   /**/**   /**//*****   /**       ",13,10
+								db 	"     /////** **////**  /** /** /**/**////    /**/**   /** /////**  /**       ",13,10
+								db  "      ***** //******** *** /** /**//******   ***//******  ******   //**      ",13,10
+								db 	"    /////   //////// ///  //  //  //////   ///  //////  //////     //        ",13,10
+								db	"                                                                             ",13,10
+								db	"                                                                             ",13,10
+								db	"                                                                             ",13,10
+								db	"                         Do you wuant to play again?                         ",13,10
+								db	"                                                                             ",13,10
+								db	"             o---------o                                o---------o          ",13,10
+								db	"             | 0 - yes |                                | 1 - no  |          ",13,10
+								db	"             o---------o                                o---------o          ",13,10
+								db	"                                                                             ",13,10
+								db	"                                                                             ",13,10
+								db	"                                                                             ",13,10
+								db	"                                                                             ",13,10
+								db	"                                                                            $",13,10
+
+	; :::::::::::::::::: Views ::::::::::::::::::
 		difficulty		db		? 	; (?) Multiplier para pontuação
 		conta_maca		db		0
 
@@ -239,8 +483,11 @@ menu_controller PROC
 	xor		dx,	dx
 
 show_main_menu:
-		lea		dx, Menu
-		call	Imp_Fich
+		; lea		dx, Menu
+		; call	Imp_Fich
+		lea		dx, MainMenuView
+		mov		ah, 09h
+		int 	21h
 
 		call 	get_menu_option
 
@@ -263,15 +510,21 @@ show_main_menu:
 		jmp		show_main_menu
 
 tutorial:
-		lea		dx,	TutorialFile
-		call	Imp_Fich				; imprime o ficheiro corresponde ao tutorial
+		; lea		dx,	TutorialFile
+		; call	Imp_Fich				; imprime o ficheiro corresponde ao tutorial
+		lea		dx, HowToPlayView
+		mov		ah, 09h
+		int 	21h
 		call	get_menu_option
 		jmp		show_main_menu          ; volta ao menu principal
 
 gameopts:
-		lea		dx,	newGame				; imprime o ficheiro corresponde ao menu de jogo
-		call	Imp_Fich
-
+		
+		; lea		dx,	newGame				; imprime o ficheiro corresponde ao menu de jogo
+		; call	Imp_Fich
+		lea		dx, newGameView
+		mov		ah, 09h
+		int 	21h
 	gameopts_wrong_input:
 
 		call 	get_menu_option			; Lê opção inserida pelo jogador
@@ -289,8 +542,11 @@ gameopts:
 		jmp		gameopts
 
 classic_game:
-	lea		dx,	cDifficulty			; imprime o ficheiro corresponde à escolha da dificuldade
-	call	Imp_Fich
+	; lea		dx,	cDifficulty			; imprime o ficheiro corresponde à escolha da dificuldade
+	; call	Imp_Fich
+	lea		dx, ChooseDifficultyView
+	mov		ah, 09h
+	int		21h
 
 	call 	get_menu_option			; le opcao do jogador
 
@@ -326,9 +582,11 @@ classic_game:
 		jmp		show_main_menu
 
 stats:
-		lea		dx, ShowStats
-		call	Imp_Fich
-
+		; lea		dx, ShowStats
+		; call	Imp_Fich
+		lea		dx, StatsView
+		mov		ah, 09h
+		int 	21h
 		call 	get_menu_option
 
 		; Game History
@@ -346,23 +604,14 @@ stats:
 		jmp		stats
 
 madeby:
-		lea 	dx, Credits
-		call	Imp_Fich
-
+		; lea 	dx, Credits
+		; call	Imp_Fich
+		lea		dx, CreditsView
+		mov		ah, 09h
+		int		21h
 		mov		ah, 07h
 		int 	21h
 		jmp		show_main_menu
-
-game_over:
-		lea			dx,	gameOver
-		call		Imp_Fich
-
-		call		get_menu_option
-		cmp			al, '1'
-		je			classic_game
-		cmp			al, '2'
-		je			fim
-
 
 menu_controller endp
 ; :::::::::::::::::: Controlador do Menu ::::::::::::::::::
@@ -392,7 +641,7 @@ CICLO:
 	mov 		ah, 08h				; Guarda o Caracter que está na posição do Cursor
 	mov			bh,0				; numero da página
 	int			10h
-
+	
 	cmp 		al, '#'				;  na posição do Cursor
 	je			fim_jogo
 	cmp 		al, 'V'
@@ -401,15 +650,16 @@ CICLO:
 	je 			maca_madura
 	cmp			al, 'R'
 	je			rato
+
 	jmp cont_ciclo
 
 maca_verde:
-	;call 	add_merda
+	call 	add_apple
 	inc 	maca
 	jmp 	cont_ciclo
 
 maca_madura:
-	;call 	add_apple
+	call 	add_apple
 	inc	 	maca
 	inc	 	maca
 	jmp 	cont_ciclo
@@ -418,7 +668,7 @@ rato:
 
 
 cont_ciclo:
-		cmp maca, 0					; @Andre pq que fazes esta verificação ?
+		cmp maca, 0					
 		ja dec_maca
 
 	;; Limpar o rasto da cabeça da cobra
@@ -470,7 +720,8 @@ LER_SETA:
 		je			ESTEND
 		CMP 		AL, 27			; ESCAPE
 		jne			TESTE_END
-		call		are_you_sure_about_that
+		jmp			fim
+		; call		are_you_sure_about_that
 TESTE_END:		
 		CALL		PASSA_TEMPO
 		mov			AX, PASSA_T_ant
@@ -510,30 +761,38 @@ verifica_3:
 ESTEND:		
 		cmp 		al,48h
 		jne			BAIXO
+		cmp			direccao, 3
+		je			LER_SETA
 		mov			direccao, 1
 		jmp			LER_SETA
 
 BAIXO:		
 		cmp			al,50h
 		jne			ESQUERDA
+		cmp			direccao, 1
+		je			LER_SETA
 		mov			direccao, 3
 		jmp			LER_SETA
 
 ESQUERDA:
 		cmp			al,4Bh
 		jne			DIREITA
+		cmp			direccao, 0
+		je			LER_SETA
 		mov			direccao, 2
 		jmp			LER_SETA
 
 DIREITA:
 		cmp			al,4Dh
 		jne			LER_SETA 
+		cmp			direccao, 2
+		je			LER_SETA
 		mov			direccao, 0
 		jmp			LER_SETA
 
 fim_jogo:		
 		call		clear_screen
-		jmp			game_over;
+		call		game_over;
 		RET
 
 dec_maca:
@@ -615,6 +874,7 @@ wrong_input proc
         mov     ah,09h
         lea     dx,Erro_Input	; coloca a mensagem de erro no registo necessário
         int     21h				; chama a int para imprimir no stdout
+		mov		ah, 07h
 		goto_xy	posx, posy		; volta para a posição antiga do cursor
 		call 	get_menu_option
 		call	clear_screen
@@ -674,15 +934,15 @@ CalcAleat endp
 ; param : recebe em dl um aleatorio de 8 bits
 ; NOTA: devolve sempre a mini celula da esquerda
 valid_Xcoord proc
-
+	xor		dx, dx
 	mov		dx,	ultimo_num_aleat
 	xor 	ax,	ax
-	xor		bx, bx
 	xor		cx, cx
 
 	mov		al, dh
 	mov		cl, 60
 	mul		cl
+	xor		cx, cx
 	mov		cl, 255
 	div		cl
 	add		al, 4	 			; garantir que o nr e superior a 2
@@ -696,9 +956,9 @@ valid_Xcoord endp
 ; param : recebe em dl um aleatorio de 8 bits
 ; NOTA: devolve sempre a mini celula da esquerda
 valid_Ycoord proc
+	xor		dx, dx
 	mov		dx,	ultimo_num_aleat
 	xor		ax,	ax
-	xor		bx, bx
 	xor 	cx, cx
 	cmp		dl, 20			
 	jge		invalid_0
@@ -709,90 +969,82 @@ invalid_0:
 	mov		al, dl
 	mov		cl, 20
 	mul		cl
+	xor		cx, cx
 	mov		cl, 255
 	div		cl
 	add		al, 5
-	mov		posy, al
 	jmp		valid_fim
 invalid_2:
 	add		al, 4
 valid_fim:
+	mov		posy, al	
 	ret
 valid_Ycoord endp
 ; :::::::::::::::::: Gera Coordenada de Y válida ::::::::::::::::::
 
-; :::::::::::::::::: Adiciona Macas ::::::::::::::::::
-; aleatoriamente adiciona uma maca numa posicao aleatoria
 add_apple proc
-	xor		ax, ax
-	xor		dx,	dx
-	xor		bx, bx
-	xor		cx, cx
+	xor		ax, ax				
+	mov		al, posx			; guardar a posicao anterior
+	mov		posxa, al
+	mov		ah, posy
+	mov		posya, ah
 
-	call 	CalcAleat				; senao gera um numero aleatorio
-	mov		cx, ultimo_num_aleat	
-	mov		bl, 2
-	mov		al, cl					; desprezamos 8 bits desse numero gerado
-	div		bl						; dividimos por 2 para saber se o numero e par ou impar
-	
-	cmp		ah, 0					
-	je		add_macaVerde			; se for para adicionamos uma maca verde 'V'
-
-	call	CalcAleat				; senao adicionamos uma maca madura 'M'
-	call	valid_Xcoord
-	call	CalcAleat
-	call	valid_Ycoord
-	goto_xy	posx, posy
-
-	xor		ax, ax
 	xor		dx, dx
+	xor		bx, bx
+	call	valid_Xcoord		; obter uma posicao valida no gameboard
+	call	valid_Ycoord
+	goto_xy	posx, posy			; colocar o cursor nessa posicao
 
-	mov		ah, 02h
-	mov		dl, 'M' 				; interrupcao para escrever no stdout 
-	int 	21h						; NOTA: al = dl
-	
-	inc		posx					; imprimir na mini celula do lado direto
-	goto_xy posx, posy
-	mov		ah, 02h
+	; xor		cx, cx
+	; xor		ax, ax
+	; mov		ax, ultimo_num_aleat
+	; mov		cl, 2
+	; div		cl
+	; cmp		ah, 0
+	; jne		maca_verde_0
+
+	mov		ah, 2
+	mov		dl, 'M'				; imprimir a maca
+	int		21h
+	inc 	posx
+	xor		ax, ax
+	mov		ah, 2
 	mov		dl, 'M'
 	int 	21h
-	dec		posx
-	jmp		fim_addApple			; voltar a colocar o cursor na posicao antiga
+	goto_xy	posxa, posya
+	;jmp fim_add
 
-add_macaVerde:
-	call	CalcAleat
-	call	valid_Xcoord
-	call	CalcAleat
-	call	valid_Ycoord
-	goto_xy	posx, posy
-
-	xor		dx, dx
-	mov		ah, 02h
-	mov		dl, 'V'
+maca_verde_0:
+	mov		ah, 2
+	mov		dl, 'V'				; imprimir a maca
 	int		21h
-	
-	inc		posx
-	goto_xy posx, posy
-	mov		ah, 02h
+	inc 	posx
+	xor		ax, ax
+	mov		ah, 2
 	mov		dl, 'V'
-	int		21h
-	dec 	posx
+	int 	21h
+	goto_xy	posxa, posya
 
-fim_addApple:
+fim_add:
 	ret
 add_apple endp
+
+
 ; :::::::::::::::::: Adiciona Macas ::::::::::::::::::
 
 ; :::::::::::::::::: Start Game ::::::::::::::::::
 start_game proc
-	lea		dx, ClassicGame
-	call	Imp_Fich
-  
+	; lea		dx, ClassicGame
+	; call	Imp_Fich
+	lea		dx, GameBoardView
+	mov		ah, 09h
+	int		21H
+
 	xor		ax,	ax
 	xor		bx, bx
 	call 	CalcAleat
 	call	valid_Xcoord
-	call	CalcAleat
+	;call	CalcAleat
 	call	valid_Ycoord
 
 	mov 	ah, posx
@@ -815,8 +1067,10 @@ start_game endp
 ; :::::::::::::::::: are_you_sure_about_that? ::::::::::::::::::
 are_you_sure_about_that proc
 ciclo:
-	lea 	dx, AreUSure
-	call	Imp_Fich
+	lea		dx, YouSureAboutThatView
+	mov		ah, 09H
+	int		21h
+
 	call	get_menu_option
 	cmp		al, '0'
 	JE		fim
@@ -824,51 +1078,28 @@ ciclo:
 	je		game
 	call	wrong_input
 	jmp   	ciclo
+
 game:
 	call		start_game
 	ret
 are_you_sure_about_that endp
 ; :::::::::::::::::: are_you_sure_about_that? ::::::::::::::::::
 
-; :::::::::::::::::: Draw Snake Position ::::::::::::::::::
-;draw_snake proc
-;		xor			cx, cx
-;		xor			ax,	ax
-;		xor			si, si
-;		mov			cl, tam
-;loop_1:
-;		mov			ax,	cobra[si] ; se a head estiver no array da cobra
-;		cmp			ax,	'$'
-;		je			fim_draw
-;
-;		goto_xy		ah, al
-;		mov			ah, 02h
-;		mov			dl, '(' 		; Coloca ESPAÇO
-;		int			21H	
-;
-;		inc			ah
-;		goto_xy		ah, al	
-;		mov			ah, 02h
-;		mov			dl, ')'			;  Coloca ESPAÇO
-;		int			21H
-;		call		get_menu_option
-;		loop		loop_1
-;
-;fim_draw:		
-;		goto_xy		POSx,POSy		; Vai para posição do cursor
-;draw_snake endp
-; :::::::::::::::::: Draw Snake Position ::::::::::::::::::
-
 ; :::::::::::::::::: Game Over ::::::::::::::::::
 game_over proc
+; TODO: rest em tudo o que é dados de jogo (para o caso do jogador querer voltar a jogar)
 wrong_0:
 	call	clear_screen
-	lea		dx, gameOver
-	call	Imp_Fich
+	mov		tam, 1
+	; lea		dx, gameOver
+	; call	Imp_Fich
+	lea		dx, GameOverView
+	mov		ah, 09h
+	int 	21h
 	call	get_menu_option
 	cmp		al, '1'					; jogador nao quer voltar a jogar
 	je		fim
-	cmp		al, '2'					; jogador quer voltar a jogar
+	cmp		al, '0'					; jogador quer voltar a jogar
 	jne		wrong
 	call	menu_controller
 wrong:								; se o input não for válido, alerta o jogador e volta a perguntar
@@ -884,7 +1115,9 @@ INICIO:
 	MOV			ES,AX			; (?)	; ES indica segmento de memória de VIDEO
 	CALL 		clear_screen
 	call		menu_controller
-fim:	mov     ah,4ch
+fim:
+	call clear_screen	
+	mov     ah,4ch
 	int     21h
 
 
