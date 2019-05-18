@@ -25,7 +25,7 @@ DADOS	SEGMENT PARA 'DATA'
 	; :::::::::::::::::: File Handles ::::::::::::::::::
 
 	; :::::::::::::::::: Handles ::::::::::::::::::
-		pontos			db		255
+		pontos			dw		0
 		str_aux			db		10 dup('$')
 	; :::::::::::::::::: Handles ::::::::::::::::::
 
@@ -636,14 +636,17 @@ classic_game:
 
 	slug: 
 		mov factor, 100
+		mov difficulty, 1
 		jmp game_start
 
 	hare:
 		mov factor, 50
+		mov difficulty, 2
 		jmp game_start
 
 	cheetah:
 		mov factor, 25
+		mov difficulty, 3
 		jmp game_start
 
 	game_start:
@@ -751,20 +754,37 @@ CICLO:
 	jmp cont_ciclo
 
 maca_verde:
-	call	mostra_pontuacao 	; Mostra prontuação
+	xor ax,ax
+	mov al, difficulty
+	add pontos, ax				; adiciona 1*dificuldade pontos
+	;call	mostra_pontuacao 	; Mostra prontuação
 	call 	add_apple
 	inc 	maca
 	jmp 	cont_ciclo
 
 maca_madura:
-	call	mostra_pontuacao 	; Mostra prontuação
+	xor ax,ax
+	mov al, difficulty
+	mov bl, 2
+	mul bl					
+	add pontos, ax				; adiciona 2*dificuldade pontos
+	;call	mostra_pontuacao 	; Mostra prontuação
 	call 	add_apple
 	inc	 	maca
 	inc	 	maca
 	jmp 	cont_ciclo
 
 rato:
-
+	xor ax,ax
+	mov al, difficulty
+	mov bl, 5
+	mul bl
+	cmp pontos, ax
+	jae neg_points				; se tiver menos pontos que os que deve retirar, retira todos os pontos que tem
+	mov ax, pontos
+neg_points:
+	sub pontos, ax
+	;call	mostra_pontuacao 	; Mostra prontuação
 
 cont_ciclo:
 		cmp maca, 0					
@@ -946,50 +966,54 @@ move_tail endp
 ; :::::::::::::::::: Movimento da Cobra ::::::::::::::::::
 
 ; :::::::::::::::::: Mostra Pontuação ::::::::::::::::::
-mostra_pontuacao proc
-	push	ax
-	push	bx
-	push	cx
-	push	dx
-	xor		si, si
-	xor		dx, dx
-	xor		ax, ax
-	xor		bx, bx
-	mov		bl, 10
-	mov		al, pontos
 
-break_chars:
-	xor		ah, ah
-	div		bl					; ah fica com o caracter a converter para ascii
-	cmp		ah, 0
-	je		display
-	add		ah, 30h				; para converter para ascii
-	mov		str_aux[si], ah
-	inc		si
-	loop	break_chars
+
+; mostra_pontuacao proc
+; 	push	ax
+; 	push	bx
+; 	push	cx
+; 	push	dx
+; 	xor		si, si
+; 	xor		dx, dx
+; 	xor		ax, ax
+; 	xor		bx, bx
+; 	mov		bl, 10
+; 	mov		al, pontos
+
+; break_chars:
+; 	xor		ah, ah
+; 	div		bl					; ah fica com o caracter a converter para ascii
+; 	cmp		ah, 0
+; 	je		display
+; 	add		ah, 30h				; para converter para ascii
+; 	mov		str_aux[si], ah
+; 	inc		si
+; 	loop	break_chars
 	
-display:
-	dec 	si
-	mov		cx, si
-	goto_xy	posxpont, posypont
-display_pont:
-	xor		dl, dl
-	mov		ah, 02h
-	mov		dl, str_aux[si]
-	int		21h
-	cmp		si, 0
-	je		fim_mostra
-	dec		si
-	jmp		display_pont
+; display:
+; 	dec 	si
+; 	mov		cx, si
+; 	goto_xy	posxpont, posypont
+; display_pont:
+; 	xor		dl, dl
+; 	mov		ah, 02h
+; 	mov		dl, str_aux[si]
+; 	int		21h
+; 	cmp		si, 0
+; 	je		fim_mostra
+; 	dec		si
+; 	jmp		display_pont
 
-fim_mostra:
-	goto_xy	posx, posy  		; será que é para aqui que ele volta, ou volta para a cabeça ?
-	pop		ax
-	pop		bx
-	pop		cx
-	pop		dx
-	ret
-mostra_pontuacao endp
+; fim_mostra:
+; 	goto_xy	posx, posy  		; será que é para aqui que ele volta, ou volta para a cabeça ?
+; 	pop		ax
+; 	pop		bx
+; 	pop		cx
+; 	pop		dx
+; 	ret
+; mostra_pontuacao endp
+
+
 ; :::::::::::::::::: Mostra Pontuação ::::::::::::::::::
 
 ; :::::::::::::::::: MACRO Imprime String ::::::::::::::::::
@@ -1029,37 +1053,56 @@ wrong_input endp
 ; assume-se que DS esta a apontar para o segmento onde esta armazenada ultimo_num_aleat
 CalcAleat proc near
 
-	sub		sp,2		; 
-	push	bp
-	mov		bp,sp
-	push	ax
-	push	cx
-	push	dx	
-	mov		ax,[bp+4]
-	mov		[bp+2],ax
+	push ax
+	push dx
+	push cx
 
-	mov		ah,00h
-	int		1ah
+	mov ah, 2dh
+	int 21H
+	add dx, ultimo_num_aleat
+	xchg dl, dh
+	mov ax, 65521
+	mul dx
+	xchg al, ah
+	mov ultimo_num_aleat, ax
 
-	add		dx,ultimo_num_aleat	; vai buscar o aleat�rio anterior
-	add		cx,dx
-	mov		ax,65521
-	push	dx
-	mul		cx			
-	pop		dx			 
-	xchg	dl,dh
-	add		dx,32749
-	add		dx,ax
 
-	mov		ultimo_num_aleat,dx	; guarda o novo numero aleat�rio  
-
-	mov		[BP+4],dx		; o aleat�rio � passado por pilha
-
-	pop		dx
-	pop		cx
-	pop		ax
-	pop		bp
+	pop  cx
+	pop dx
+	pop ax
 	ret
+
+	; sub		sp,2		; 
+	; push	bp
+	; mov		bp,sp
+	; push	ax
+	; push	cx
+	; push	dx	
+	; mov		ax,[bp+4]
+	; mov		[bp+2],ax
+
+	; mov		ah,00h
+	; int		1ah
+
+	; add		dx,ultimo_num_aleat	; vai buscar o aleat�rio anterior
+	; add		cx,dx
+	; mov		ax,65521
+	; push	dx
+	; mul		cx			
+	; pop		dx			 
+	; xchg	dl,dh
+	; add		dx,32749
+	; add		dx,ax
+
+	; mov		ultimo_num_aleat,dx	; guarda o novo numero aleat�rio
+
+	; mov		[BP+4],dx		; o aleat�rio � passado por pilha
+
+	; pop		dx
+	; pop		cx
+	; pop		ax
+	; pop		bp
+	; ret
 
 CalcAleat endp
 ; :::::::::::::::::: Calcula Aleatorio ::::::::::::::::::
@@ -1074,12 +1117,15 @@ valid_Xcoord proc
 	xor		cx, cx
 
 	mov		al, dh
-	mov		cl, 60
+	mov		cl, 30
 	mul		cl
 	xor		cx, cx
 	mov		cl, 255
 	div		cl
-	add		al, 4	 			; garantir que o nr e superior a 2
+	mov cl, 2
+	mul cl
+
+	add		al, 4	 			; garantir que o nr e superior a 4
 
 	mov		posx, al
 	ret
@@ -1116,13 +1162,16 @@ valid_fim:
 valid_Ycoord endp
 ; :::::::::::::::::: Gera Coordenada de Y válida ::::::::::::::::::
 
-add_apple proc
-	xor		ax, ax				
-	mov		al, posx			; guardar a posicao anterior
-	mov		posxa, al
-	mov		ah, posy
-	mov		posya, ah
+; :::::::::::::::::: Adiciona Macas ::::::::::::::::::
 
+add_apple proc
+	; xor		ax, ax				
+	; mov		al, posx			; guardar a posicao anterior
+	; mov		posxa, al
+	; mov		ah, posy
+	; mov		posya, ah
+
+	call 	CalcAleat
 	xor		dx, dx
 	xor		bx, bx
 	call	valid_Xcoord		; obter uma posicao valida no gameboard
@@ -1147,7 +1196,7 @@ add_apple proc
 	mov		ah, 2
 	mov		dl, 'M'
 	int 	21h
-	goto_xy	posxa, posya
+	goto_xy	head_x, head_y
 	jmp fim_add
 
 maca_verde_0:
@@ -1159,7 +1208,7 @@ maca_verde_0:
 	mov		ah, 2
 	mov		dl, 'V'
 	int 	21h
-	goto_xy	posxa, posya
+	goto_xy	head_x, head_y
 
 fim_add:
 	ret
@@ -1176,9 +1225,9 @@ start_game proc
 	mov		ah, 09h
 	int		21H
 
-	cmp		factor, 100
+	cmp		difficulty, 1
 	je		slug_level
-	cmp		factor, 50
+	cmp		difficulty, 2
 	je		hare_level
 	goto_xy	posxlevel, posylevel
 	lea		dx, cheetah_label
@@ -1203,7 +1252,7 @@ hare_level:
 	xor		bx, bx
 	call 	CalcAleat
 	call	valid_Xcoord
-	;call	CalcAleat
+	call	CalcAleat
 	call	valid_Ycoord
 
 	mov 	ah, posx
@@ -1214,6 +1263,7 @@ hare_level:
 	mov 	tail_x, ah
 	mov 	tail_y, al
 	mov  	tam, 0
+	mov 	direccao, 3
 	
 	call 	move_snake
 	cmp		al, 1Bh		; considerando que sempre o jogo acaba o jogador perdeu
