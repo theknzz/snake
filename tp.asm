@@ -996,17 +996,17 @@ maca_madura:
 rato:
 	xor ax,ax
 
-	xor bx,bx
-	mov al, 160
-	mul rato_y
-	mov si,ax
-	mov al, 2
-	mul rato_x
-	mov bx,ax
-	mov dl,' '
-	mov dh, 60h
-	mov es:[si][bx], dx
-	mov es:[si][bx+2], dx
+	; xor bx,bx
+	; mov al, 160
+	; mul rato_y
+	; mov si,ax
+	; mov al, 2
+	; mul rato_x
+	; mov bx,ax
+	; mov dl,' '
+	; mov dh, 60h
+	; mov es:[si][bx], dx
+	; mov es:[si][bx+2], dx
 
 	mov al, difficulty
 	mov bl, 5
@@ -1263,6 +1263,7 @@ dir_baix:
 fim_rato:
 	dec tam
 loop ciclo_rato
+	ret
 come_rato endp
 ; :::::::::::::::::: Movimento da Cobra ::::::::::::::::::
 
@@ -1452,7 +1453,7 @@ valid_Ycoord proc
 	xor		cx, cx
 	mov		cl, 255
 	div		cl
-	add		al, 5
+	add		al, 2
 	; jmp		valid_fim
 ; invalid_2:
 	; add		al, 4
@@ -1479,7 +1480,7 @@ generate_position:
 	xor		bx, bx
 	call 	CalcAleat
 	call	valid_Xcoord		; obter uma posicao valida no gameboard
-	mov		posx, ah
+	mov		posx, al
 	call 	CalcAleat
 	call	valid_Ycoord
 	mov		posy, al
@@ -1551,28 +1552,28 @@ add_ratos proc
 add_rato:
 	call	CalcAleat
 	call	valid_Xcoord
-	mov		rato_x, ah
+	mov		rato_x, al
 	call	CalcAleat
 	call	valid_Ycoord
 	mov		rato_y, al
-	xor		ax, ax
-	mov		ah, posx
-	mov		al, posy
-	mov		rato_x, ah
-	mov		rato_y, al
+	; xor		ax, ax
+	; mov		ah, posx
+	; mov		al, posy
+	; mov		rato_x, ah
+	; mov		rato_y, al
 	goto_xy rato_x, rato_y
-
+	
 	mov		ah, 02H
 	mov		dl, 'R'
 	int		21H
 	inc		rato_x
 	goto_xy rato_x, rato_y
-	dec		rato_x
+	;dec		rato_x
 
 	mov		ah, 02H
 	mov		dl, 'R'
 	int		21H
-	goto_xy rato_x, rato_y
+	;goto_xy rato_x, rato_y
 
 	mov		bl, nr_ratos
 	inc		bl
@@ -1689,18 +1690,18 @@ hare_level:
 	xor		bx, bx
 	call 	CalcAleat
 	call	valid_Xcoord
-
+	mov 	head_x, al
+	mov 	tail_x, al
 	call	CalcAleat
 	call	valid_Ycoord
-
-	mov 	head_x, ah
-	mov 	head_y, al
-
-	dec 	al
-	mov 	tail_x, ah
+	cmp al, 12
+	ja abv12
 	mov 	tail_y, al
-	mov  	tam, 0
+	inc 	al
+	mov 	head_y, al
 	mov 	direccao, 3
+continue_setup:	
+	mov  	tam, 0
 	xor		ax, ax
 	; mov		al, tp_vida
 	call 	move_snake
@@ -1708,6 +1709,12 @@ hare_level:
 	call	are_you_sure_about_that
 	call	game_over		; podemos validar o ESC para perguntar se quer mesmo sair
 	ret
+abv12:
+	mov 	tail_y, al
+	dec 	al
+	mov 	head_y, al
+	mov 	direccao, 1
+	jmp continue_setup
 start_game endp
 ; :::::::::::::::::: Start Game ::::::::::::::::::
 
