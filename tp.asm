@@ -3,7 +3,8 @@
 .stack	2048
 
 DADOS	SEGMENT PARA 'DATA'
-
+		POSy			db		10	; a linha pode ir de [1 .. 25]
+		POSx			db		40	; POSx pode ir [1..80]	
 	; :::::::::::::::::: Files in Memory ::::::::::::::::::
 		; Menu            db      './files/menu.txt',0
 		; newgame			db		'./files/newGame.txt',0
@@ -70,8 +71,7 @@ DADOS	SEGMENT PARA 'DATA'
 								db	"            SCORE:                           LEVEL:                           ",13,10
 								db	"                                                                             $",13,10
 
-			BonusGameBoardView	db	"                                                                              ",13,10
-								db	"                           DANGER NOODLE                       Vidas: V V V   ",13,10
+			BonusGameBoardView	db	"                           DANGER NOODLE                       Vidas: V V V   ",13,10
 								db	"  ##################################################################          ",13,10
 								db	"  ##                                                              ##          ",13,10
 								db	"  ##                                                              ##          ",13,10
@@ -365,10 +365,9 @@ DADOS	SEGMENT PARA 'DATA'
 								db	"             o---------o                                o---------o          ",13,10
 								db	"                                                                             ",13,10
 								db	"                                                                             ",13,10
-								db	"                                                                             ",13,10
 								db	"                                                                            $",13,10
 
-		GameOverView			db	"                                                                             ",13,10
+				GameOverView	db	"                                                                             ",13,10
 								db	"                                                                             ",13,10
 								db	"                                                                             ",13,10
 								db	"                                                                             ",13,10
@@ -394,6 +393,8 @@ DADOS	SEGMENT PARA 'DATA'
 								db	"                                                                             ",13,10
 								db	"                                                                            $",13,10
 
+
+
 		slug_label		db		"SLUG$"
 		hare_label		db		"HARE$"
 		cheetah_label	db		"CHEETAH$"
@@ -411,13 +412,13 @@ DADOS	SEGMENT PARA 'DATA'
 		difficulty		db		? 	; (?) Multiplier para pontuação
 		conta_maca		db		0
 
+		nr_macas		db		0	
 		nr_ratos		db		0
 		rato_x			db 		?
 		rato_y			db		?
 		tp_vida			db		?
+		rato_nasce		db		?
 
-		POSy			db		10	; a linha pode ir de [1 .. 25]
-		POSx			db		40	; POSx pode ir [1..80]	
 		POSya			db		5	; Posição anterior de y
 		POSxa			db		10	; Posição anterior de x
 		POSxPont		db		19
@@ -448,6 +449,9 @@ CODIGO	SEGMENT PARA 'CODE'
 ;  > param: posx - coluna, posy - lina 
 ;------------------------------------------------------------------------
 GOTO_XY		MACRO	POSX,POSY
+			xor bx, bx
+			xor	ax, ax
+			xor	dx, dx
 			MOV	AH,02H
 			MOV	BH,0
 			MOV	DL,POSX
@@ -508,28 +512,19 @@ Imp_Fich	endp
 
 ; :::::::::::::::::: ROTINA PARA APAGAR ECRAN ::::::::::::::::::
 ; author: Professor
-clear_screen	PROC
-		PUSH BX
-		PUSH AX
-		PUSH CX
-		PUSH SI
-		XOR	BX,BX
-		MOV	CX, 24*80
-		mov bx, 160
-		MOV SI,BX
-clear:	
-		MOV	AL, ' '
-		MOV	BYTE PTR ES:[BX],AL
-		MOV	BYTE PTR ES:[BX+1],7
-		INC	BX
-		INC BX
-		INC SI
-		LOOP	clear
-		POP SI
-		POP CX
-		POP AX
-		POP BX
-		RET
+clear_screen	proc
+		push bx
+		xor	bx,bx
+		mov	cx,25*80
+		
+apaga:		
+		mov	byte ptr es:[bx],' '
+		mov	byte ptr es:[bx+1],7
+		inc	bx
+		inc 	bx
+		loop	apaga
+		pop	bx
+		ret
 clear_screen	ENDP
 ; :::::::::::::::::: ROTINA PARA APAGAR ECRAN ::::::::::::::::::
 
@@ -837,12 +832,14 @@ LE_TECLA	endp
 ; Change Game Board
 
 changeBoard proc
-		; mov 	bl, 10
-		; mov		bh, 30
-		; mov		posx, bl
-		; mov		posy, bh
-		; goto_xy	posx, posy
+		mov 	bl, 11
+		mov		bh, 33
+		mov		posx, bh
+		mov		posy, bl
+		goto_xy	posx, posy
+
 LER_SETA:
+		xor		bx, bx
 		call 	LE_TECLA
 		cmp		ah, 1
 		je		ESTEND
@@ -870,6 +867,7 @@ LER_SETA:
 		dec		posx
 		goto_xy	posx, posy
 		jmp 	LER_SETA
+
 createMuro:
 		mov		ah, 02H
 		mov		dl, '#'
@@ -882,7 +880,9 @@ createMuro:
 		dec		posx
 		goto_xy	posx, posy
 		jmp LER_SETA
+
 fim_ler_seta:
+		call clear_screen
 		ret
 		jmp		LER_SETA
 		
@@ -927,7 +927,6 @@ DIREITA:
 help:
 		cmp		al, 48h
 		jne		LER_SETA
-		jmp		LER_SETA
 	
 changeBoard endp
 
@@ -971,7 +970,7 @@ maca_verde:
 	xor ax,ax
 	mov al, difficulty
 	add pontos, ax				; adiciona 1*dificuldade pontos
-	;call	mostra_pontuacao 	; Mostra prontuação
+	call	mostra_pontuacao 	; Mostra prontuação
 	call 	add_apple
 	inc 	maca
 	call 	limpa_maca
@@ -983,7 +982,7 @@ maca_madura:
 	mov bl, 2
 	mul bl					
 	add pontos, ax				; adiciona 2*dificuldade pontos
-	;call	mostra_pontuacao 	; Mostra prontuação
+	call	mostra_pontuacao 	; Mostra prontuação
 	call 	add_apple
 	inc	 	maca
 	inc	 	maca
@@ -1000,7 +999,7 @@ rato:
 	mov ax, pontos
 neg_points:
 	sub pontos, ax
-	;call	mostra_pontuacao 	; Mostra prontuação
+	call	mostra_pontuacao 	; Mostra prontuação
 
 cont_ciclo:
 		cmp maca, 0					
@@ -1026,8 +1025,7 @@ cont_ciclo:
 IMPRIME:
 	;; Atualizar a cabeça da cobra
 		goto_xy		head_x,head_y		; Vai para posição do cursor
-		call get_menu_option
-		call		verifica_rato
+		;call		verifica_rato
 		mov 		ah, 08h				; Guarda o Caracter que está na posição do Cursor
 		mov			bh,0				; numero da página
 		int			10h
@@ -1048,7 +1046,12 @@ IMPRIME:
 		int			21H	
 
 		goto_xy		head_x, head_y		; Vai para posição do cursor
+		cmp			nr_macas, 0
+		je			spawn_maca
+		jmp			LER_SETA
 
+spawn_maca:
+		call 	add_apple
 		
 LER_SETA:	
 		call 		LE_TECLA_0
@@ -1145,9 +1148,9 @@ dir_vector PROC
 	mov cx, ax
 	inc cx					; como tam = tamanho da cobra - 1,  inc no cx
 	mov al, direccao
-	ccl:
+ccl:
 	xchg al, snake_dir[si]		; al = direçao que a 'peça' seguinte mais perto da cauda vai ter,  snake_dir(si) = dir que a posição anterior tinha
-	inc si						; basicamente AL=0   snake dir=3,1,3,2,1   ->   snake_dir=0,3,1,3,2
+	inc si			; basicamente AL=0   snake dir=3,1,3,2,1   ->   snake_dir=0,3,1,3,2
 	loop ccl
 	ret
 dir_vector endp
@@ -1194,6 +1197,7 @@ limpa_maca proc
 	mov dx, 3720h
 	mov es:[si][bx], dx
 	mov es:[si][bx+2], dx
+	dec	nr_macas
 
 	ret
 
@@ -1403,7 +1407,8 @@ add_apple proc
 	; mov		posxa, al
 	; mov		ah, posy
 	; mov		posya, ah
-
+	mov		bl, 1
+	mov		nr_macas, bl
 generate_position:
 	call 	CalcAleat
 	xor		dx, dx
@@ -1489,44 +1494,66 @@ add_apple endp
 add_ratos proc
 	cmp		nr_ratos, 0
 	je		add_rato
-	jmp		fim_add_1
+	jmp		verifica_rato
 
 add_rato:
 	call	CalcAleat
 	call	valid_Xcoord
 	call	CalcAleat
 	call	valid_Ycoord
-	xor		al, al
-	mov		al, posx
-	mov		ah, posy
-	mov		rato_x, al
-	mov		rato_y, ah
-	goto_xy posx, posy
+	xor		ax, ax
+	mov		ah, posx
+	mov		al, posy
+	mov		rato_x, ah
+	mov		rato_y, al
+	goto_xy rato_x, rato_y
+
 	mov		ah, 02H
 	mov		dl, 'R'
 	int		21H
 	inc		posx
-	goto_xy posx, posy
+	goto_xy posx, rato_y
 	mov		ah, 02H
 	mov		dl, 'R'
 	int		21H
-	dec 	posx
-	goto_xy posx, posy
-	mov		bl, 1
+
+	;dec 	posx
+	goto_xy rato_x, rato_y
+	mov		bl, nr_ratos
+	inc		bl
 	mov		nr_ratos, bl
+
 
 	mov		ah, 2ch			; tempo do sistema
 	int		21h
+	mov		rato_nasce, dh
 
-	mov		al, dh
-	mov		bl, 4
-	mul		bl
-	xor		bx, bx
-	mov		bl, 60
-	div		bl
-	mov		tp_vida, al
-
-fim_add_1:
+verifica_rato:
+	mov	ah, 2ch
+	int	21h
+	cmp	dh, rato_nasce
+	jb	add60
+	jmp	TempoDeVida
+add60:
+	add dh, 60
+TempoDeVida:
+	sub	dh, rato_nasce
+	cmp	dh, 4
+	jge	mata_rato
+	jmp fim_add_rato
+mata_rato:
+	goto_xy rato_x, rato_y
+	mov	ah, 02H
+	mov	dl, ' '
+	int	21H
+	inc rato_x
+	goto_xy rato_x, rato_y
+	mov	ah, 02H
+	mov	dl, ' '
+	int	21h
+	mov	bl, 0
+	mov	rato_nasce, bl
+fim_add_rato:
 	ret
 
 add_ratos endp
@@ -1618,8 +1645,6 @@ hare_level:
 	mov 	tail_y, al
 	mov  	tam, 0
 	mov 	direccao, 3
-	;call	add_apple
-	call	add_ratos
 	xor		ax, ax
 	mov		al, tp_vida
 	call 	move_snake
@@ -1653,7 +1678,7 @@ are_you_sure_about_that endp
 
 ; :::::::::::::::::: Game Over ::::::::::::::::::
 game_over proc
-; TODO: rest em tudo o que é dados de jogo (para o caso do jogador querer voltar a jogar)
+	; TODO: rest em tudo o que é dados de jogo (para o caso do jogador querer voltar a jogar)
 wrong_0:
 	call	clear_screen
 	mov		tam, 1
@@ -1681,7 +1706,7 @@ INICIO:
 	MOV			ES,AX			
 	CALL 		clear_screen
 	call		menu_controller
-fim:
+  fim:
 	call clear_screen	
 	mov     ah,4ch
 	int     21h
