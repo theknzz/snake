@@ -1000,6 +1000,7 @@ rato:
 neg_points:
 	sub pontos, ax
 	call	mostra_pontuacao 	; Mostra prontuação
+	call come_rato
 
 cont_ciclo:
 		cmp maca, 0					
@@ -1202,6 +1203,47 @@ limpa_maca proc
 	ret
 
 limpa_maca endp
+
+come_rato proc
+
+	xor cx,cx
+	xor bx,bx
+	mov cx, 5
+	cmp tam, 5
+	jae ciclo_rato
+	mov cl, tam
+ciclo_rato:
+	mov ah, tail_x
+	mov posx, ah
+	goto_xy tail_x, tail_y
+	mov dl,' '
+	mov ah,02h
+	int 21h
+	inc posx
+	goto_xy posx, tail_y
+	mov dl, ' '
+	int 21h
+	mov bl, tam
+	cmp snake_dir[bx], 0
+	jne dir_cim
+	add tail_x, 2
+	jmp fim_rato
+dir_cim:
+	cmp snake_dir[bx], 1
+	jne dir_esq
+	dec tail_y
+	jmp fim_rato
+dir_esq:
+	cmp snake_dir[bx], 2
+	jne dir_baix
+	sub tail_x, 2
+	jmp fim_rato
+dir_baix:
+	inc tail_y
+fim_rato:
+	dec tam
+loop ciclo_rato
+come_rato endp
 ; :::::::::::::::::: Movimento da Cobra ::::::::::::::::::
 
 ; :::::::::::::::::: Mostra Pontuação ::::::::::::::::::
