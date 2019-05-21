@@ -1419,12 +1419,12 @@ valid_Ycoord proc
 	mov		dx,	ultimo_num_aleat
 	xor		ax,	ax
 	xor 	cx, cx
-	cmp		dl, 20			
-	jge		invalid_0
-	cmp		dl, 2
-	jb		invalid_2
-	ret
-invalid_0:
+	; cmp		dl, 20			
+	; jge		invalid_0
+	; cmp		dl, 2
+	; jb		invalid_2
+	; ret
+; invalid_0:
 	mov		al, dl
 	mov		cl, 20
 	mul		cl
@@ -1432,10 +1432,10 @@ invalid_0:
 	mov		cl, 255
 	div		cl
 	add		al, 5
-	jmp		valid_fim
-invalid_2:
-	add		al, 4
-valid_fim:
+	; jmp		valid_fim
+; invalid_2:
+	; add		al, 4
+; valid_fim:
 	mov		posy, al	
 	ret
 valid_Ycoord endp
