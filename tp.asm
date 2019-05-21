@@ -949,7 +949,9 @@ get_menu_option endp
 ; :::::::::::::::::: Movimento da Cobra ::::::::::::::::::
 move_snake PROC
 CICLO:
+	call		add_ratos
 	call 		dir_vector
+	; call		get_menu_option
 	goto_xy		head_x,head_y		; Vai para nova posição
 	mov 		ah, 08h				; Guarda o Caracter que está na posição do Cursor
 	mov			bh,0				; numero da página
@@ -967,36 +969,52 @@ CICLO:
 	jmp cont_ciclo
 
 maca_verde:
-	xor ax,ax
-	mov al, difficulty
-	add pontos, ax				; adiciona 1*dificuldade pontos
+	xor 	ax,ax
+	mov 	al, difficulty
+	add 	pontos, ax				; adiciona 1*dificuldade pontos
 	call	mostra_pontuacao 	; Mostra prontuação
 	call 	add_apple
 	inc 	maca
+	dec		nr_macas
 	call 	limpa_maca
 	jmp 	cont_ciclo
 
 maca_madura:
-	xor ax,ax
-	mov al, difficulty
-	mov bl, 2
-	mul bl					
-	add pontos, ax				; adiciona 2*dificuldade pontos
+	xor 	ax,ax
+	mov 	al, difficulty
+	mov 	bl, 2
+	mul 	bl					
+	add 	pontos, ax				; adiciona 2*dificuldade pontos
 	call	mostra_pontuacao 	; Mostra prontuação
 	call 	add_apple
 	inc	 	maca
 	inc	 	maca
+	dec		nr_macas
 	call 	limpa_maca
 	jmp 	cont_ciclo
 
 rato:
 	xor ax,ax
+
+	xor bx,bx
+	mov al, 160
+	mul rato_y
+	mov si,ax
+	mov al, 2
+	mul rato_x
+	mov bx,ax
+	mov dl,' '
+	mov dh, 60h
+	mov es:[si][bx], dx
+	mov es:[si][bx+2], dx
+
 	mov al, difficulty
 	mov bl, 5
 	mul bl
 	cmp pontos, ax
 	jae neg_points				; se tiver menos pontos que os que deve retirar, retira todos os pontos que tem
 	mov ax, pontos
+
 neg_points:
 	sub pontos, ax
 	call	mostra_pontuacao 	; Mostra prontuação
@@ -1048,10 +1066,12 @@ IMPRIME:
 		goto_xy		head_x, head_y		; Vai para posição do cursor
 		cmp			nr_macas, 0
 		je			spawn_maca
+
 		jmp			LER_SETA
 
 spawn_maca:
 		call 	add_apple
+		inc		nr_macas
 		
 LER_SETA:	
 		call 		LE_TECLA_0
@@ -1241,10 +1261,10 @@ display_pont:
 
 fim_mostra:
 	goto_xy	posx, posy  		
-	pop		ax
-	pop		bx
-	pop		cx
 	pop		dx
+	pop		cx
+	pop		bx
+	pop		ax
 	ret
 mostra_pontuacao endp
 ; :::::::::::::::::: Mostra Pontuação ::::::::::::::::::
@@ -1303,8 +1323,7 @@ CalcAleat proc near
 	xchg al,ah
 	mov ultimo_num_aleat, ax
 
-
-	pop  cx
+	pop cx
 	pop dx
 	pop ax
 	ret
@@ -1347,6 +1366,7 @@ CalcAleat endp
 ; :::::::::::::::::: Gera Coordenada de X válida ::::::::::::::::::
 ; param : recebe em dl um aleatorio de 8 bits
 ; NOTA: devolve sempre a mini celula da esquerda
+; return: Ah - x coord
 valid_Xcoord proc
 	xor		dx, dx
 	mov		dx,	ultimo_num_aleat
@@ -1372,6 +1392,7 @@ valid_Xcoord endp
 ; :::::::::::::::::: Gera Coordenada de Y válida ::::::::::::::::::
 ; param : recebe em dl um aleatorio de 8 bits
 ; NOTA: devolve sempre a mini celula da esquerda
+; return: Al - y coord
 valid_Ycoord proc
 	xor		dx, dx
 	mov		dx,	ultimo_num_aleat
@@ -1410,13 +1431,16 @@ add_apple proc
 	mov		bl, 1
 	mov		nr_macas, bl
 generate_position:
-	call 	CalcAleat
+	;call 	CalcAleat
+	xor		ax, ax
 	xor		dx, dx
-	xor		bx, bx	
+	xor		bx, bx
 	call 	CalcAleat
-	call	valid_Xcoord		; obter uma posicao valida no gameboard	
+	call	valid_Xcoord		; obter uma posicao valida no gameboard
+	mov		posx, ah
 	call 	CalcAleat
 	call	valid_Ycoord
+	mov		posy, al
 	goto_xy	posx, posy			; colocar o cursor nessa posicao
 	
 	mov		ah, 08H
@@ -1450,16 +1474,6 @@ generate_position:
 	mov es:[si][bx+2], dx
 	jmp fim_add
 
-	; mov		ah, 2
-	; mov		dl, 'M'				; imprimir a maca
-	; int		21h
-	; inc 	posx
-	; xor		ax, ax
-	; mov		ah, 2
-	; mov		dl, 'M'
-	; int 	21h
-	; goto_xy	head_x, head_y
-	; jmp fim_add
 
 maca_verde_0:
 	xor ax,ax
@@ -1474,16 +1488,6 @@ maca_verde_0:
 	mov dh, 23h
 	mov es:[si][bx], dx
 	mov es:[si][bx+2], dx
-	
-	; mov		ah, 2
-	; mov		dl, 'V'				; imprimir a maca
-	; int		21h
-	; inc 	posx
-	; xor		ax, ax
-	; mov		ah, 2
-	; mov		dl, 'V'
-	; int 	21h
-	; goto_xy	head_x, head_y
 
 fim_add:
 	ret
@@ -1492,6 +1496,12 @@ add_apple endp
 
 ; :::::::::::::::::: Adiciona Ratos ::::::::::::::::::
 add_ratos proc
+	
+	xor	ax, ax
+	xor	bx, bx
+	xor	cx, cx
+	xor	dx, dx
+
 	cmp		nr_ratos, 0
 	je		add_rato
 	jmp		verifica_rato
@@ -1499,8 +1509,10 @@ add_ratos proc
 add_rato:
 	call	CalcAleat
 	call	valid_Xcoord
+	mov		rato_x, ah
 	call	CalcAleat
 	call	valid_Ycoord
+	mov		rato_y, al
 	xor		ax, ax
 	mov		ah, posx
 	mov		al, posy
@@ -1511,14 +1523,15 @@ add_rato:
 	mov		ah, 02H
 	mov		dl, 'R'
 	int		21H
-	inc		posx
-	goto_xy posx, rato_y
+	inc		rato_x
+	goto_xy rato_x, rato_y
+	dec		rato_x
+
 	mov		ah, 02H
 	mov		dl, 'R'
 	int		21H
-
-	;dec 	posx
 	goto_xy rato_x, rato_y
+
 	mov		bl, nr_ratos
 	inc		bl
 	mov		nr_ratos, bl
@@ -1542,20 +1555,22 @@ TempoDeVida:
 	jge	mata_rato
 	jmp fim_add_rato
 mata_rato:
-	goto_xy rato_x, rato_y
-	mov	ah, 02H
-	mov	dl, ' '
-	int	21H
-	inc rato_x
-	goto_xy rato_x, rato_y
-	mov	ah, 02H
-	mov	dl, ' '
-	int	21h
-	mov	bl, 0
-	mov	rato_nasce, bl
+	; goto_xy rato_x, rato_y
+	; mov	ah, 02H
+	; mov	dl, ' '
+	; int	21H
+	; inc rato_x
+	; goto_xy rato_x, rato_y
+	; dec rato_x
+	; mov	ah, 02H
+	; mov	dl, ' '
+	; int	21h
+	
+	; mov	bl, 0
+	; mov	rato_nasce, bl
+
 fim_add_rato:
 	ret
-
 add_ratos endp
 ; :::::::::::::::::: Adiciona Ratos ::::::::::::::::::
 verifica_rato proc
@@ -1585,23 +1600,22 @@ mata_rato:
 	mov	dl, ' '
 	int	21H
 	mov	bl, rato_x
-	mov	posxa, bl
-	inc	posxa
-	goto_xy posxa, rato_y
+	mov	posx, bl
+	inc	posx
+	goto_xy posx, rato_y
 	mov	ah, 02H
 	mov	dl, ' '
 	int 21H
 	goto_xy posx, posy
+
 fim_1:
-	pop ax
+	pop dx
 	pop	bx
-	pop	cx
+	pop	ax
 	ret
 verifica_rato endp
 ; :::::::::::::::::: Start Game ::::::::::::::::::
 start_game proc
-	; lea		dx, ClassicGame
-	; call	Imp_Fich
 	lea		dx, GameBoardView
 	mov		ah, 09h
 	int		21H
@@ -1633,20 +1647,20 @@ hare_level:
 	xor		bx, bx
 	call 	CalcAleat
 	call	valid_Xcoord
+
 	call	CalcAleat
 	call	valid_Ycoord
 
-	mov 	ah, posx
-	mov 	al, posy
 	mov 	head_x, ah
 	mov 	head_y, al
+
 	dec 	al
 	mov 	tail_x, ah
 	mov 	tail_y, al
 	mov  	tam, 0
 	mov 	direccao, 3
 	xor		ax, ax
-	mov		al, tp_vida
+	; mov		al, tp_vida
 	call 	move_snake
 	cmp		al, 1Bh		; considerando que sempre o jogo acaba o jogador perdeu
 	call	are_you_sure_about_that
@@ -1706,7 +1720,7 @@ INICIO:
 	MOV			ES,AX			
 	CALL 		clear_screen
 	call		menu_controller
-  fim:
+   fim:
 	call clear_screen	
 	mov     ah,4ch
 	int     21h
