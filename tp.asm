@@ -6,21 +6,16 @@ DADOS	SEGMENT PARA 'DATA'
 		POSy			db		10	; a linha pode ir de [1 .. 25]
 		POSx			db		40	; POSx pode ir [1..80]	
 	; :::::::::::::::::: Files in Memory ::::::::::::::::::
-		; Menu            db      './files/menu.txt',0
-		; newgame			db		'./files/newGame.txt',0
-		; ClassicGame		db		'./files/moldura.txt',0
-		; cDifficulty		db		'./files/choose.txt',0
-		; ShowStats		db		'./files/stats.txt',0
-		; Credits			db		'./files/credits.txt',0
-		; GameOver		db		'./files/gameOver.txt',0
-		; AreUSure		db		'./files/YouSure.txt',0
-		; TutorialFile	db 		'./files/tutorial.txt',0
+		bonus_map		db		'./files/bonus_map.txt',0
     ; :::::::::::::::::: Ficheiros em Memória ::::::::::::::::::
 
 	; :::::::::::::::::: File Handles ::::::::::::::::::
 		Erro_Open       db      'Erro ao tentar abrir o ficheiro$'
 		Erro_Ler_Msg    db      'Erro ao tentar ler do ficheiro$'
 		Erro_Close      db      'Erro ao tentar fechar o ficheiro$'
+		msgErrorCreate	db	"Ocorreu um erro na criacao do ficheiro!$"
+		msgErrorWrite	db	"Ocorreu um erro na escrita para ficheiro!$"
+		msgErrorClose	db	"Ocorreu um erro no fecho do ficheiro!$"
 		HandleFich      dw      0
 		car_fich        db      ?
 	; :::::::::::::::::: File Handles ::::::::::::::::::
@@ -71,7 +66,7 @@ DADOS	SEGMENT PARA 'DATA'
 								db	"            SCORE:                           LEVEL:                           ",13,10
 								db	"                                                                             $",13,10
 
-			BonusGameBoardView	db	"                           DANGER NOODLE                       Vidas: V V V   ",13,10
+			BonusGameBoardView	db	"                             DANGER NOODLE                                    ",13,10
 								db	"  ##################################################################          ",13,10
 								db	"  ##                                                              ##          ",13,10
 								db	"  ##                                                              ##          ",13,10
@@ -79,7 +74,6 @@ DADOS	SEGMENT PARA 'DATA'
 								db	"  ##                                                              ##          ",13,10
 								db	"  ##                                                              ##          ",13,10
 								db	"  ##                                                              ##          ",13,10
-								db	"  ##                  MM                                          ##          ",13,10
 								db	"  ##                                                              ##          ",13,10
 								db	"  ##                                                              ##          ",13,10
 								db	"  ##                                                              ##          ",13,10
@@ -90,7 +84,8 @@ DADOS	SEGMENT PARA 'DATA'
 								db	"  ##                                                              ##          ",13,10
 								db	"  ##                                                              ##          ",13,10
 								db	"  ##                                                              ##          ",13,10
-								db	"  ##                                              MM              ##          ",13,10
+								db	"  ##                                                              ##          ",13,10
+								db	"  ##                                                              ##          ",13,10
 								db	"  ##                                                              ##          ",13,10
 								db	"  ##                                                              ##          ",13,10
 								db	"  ##################################################################          ",13,10
@@ -394,6 +389,34 @@ DADOS	SEGMENT PARA 'DATA'
 								db	"                                                                            $",13,10
 
 
+				MapEditorHelp	db	"                                                                             ",13,10
+								db	"                                                                             ",13,10
+								db	"                  dMMMMb  .aMMMb  dMMMMb  .aMMMMP dMMMMMP dMMMMb             ",13,10
+								db	"                 dMP VMP dMP dMP dMP dMP dMP     dMP     dMP.dMP             ",13,10
+								db  "                dMP dMP dMMMMMP dMP dMP dMP MMP dMMMP   dMMMMK               ",13,10
+								db 	"               dMP.aMP dMP dMP dMP dMP dMP.dMP dMP     dMP AMF               ",13,10
+								db 	"              dMMMMP  dMP dMP dMP dMP  VMMMP  dMMMMMP dMP dMP                ",13,10
+								db  "                                                                             ",13,10
+								db 	"                  dMMMMb  .aMMMb  .aMMMb  dMMMMb  dMP     dMMMMMP            ",13,10
+								db 	"                 dMP dMP dMP dMP dMP dMP dMP VMP dMP     dMP                 ",13,10
+								db 	"                dMP dMP dMP dMP dMP dMP dMP dMP dMP     dMMMP                ",13,10
+								db 	"               dMP dMP dMP.aMP dMP.aMP dMP.aMP dMP     dMP                   ",13,10
+								db 	"              dMP dMP  VMMMP   VMMMP  dMMMMP  dMMMMMP dMMMMMP                ",13,10
+								db	"                                                                             ",13,10
+								db	"                      		      Editor Help                                 ",13,10
+								db	"                                                                             ",13,10
+								db	"              - Use the ARROW KEYS to mouve the cursor around                ",13,10
+								db	"                                                                             ",13,10
+								db	"              - To change between '#' and ' ' use SPACE BAR                  ",13,10
+								db	"                                                                             ",13,10
+								db	"              - To save the file use ESC button                              ",13,10
+								db	"                                                                             ",13,10
+								db	"                          Press any key to go back...                        ",13,10
+								db	"                                                                             ",13,10
+								db	"                                                                            $",13,10
+								
+
+
 
 		slug_label		db		"SLUG$"
 		hare_label		db		"HARE$"
@@ -601,6 +624,10 @@ PASSA_TEMPO   ENDP
 
 ; :::::::::::::::::: Controlador do Menu ::::::::::::::::::
 menu_controller PROC
+push	ax
+push	bx
+push	cx
+push	dx
 	xor		ax,	ax
 	xor		dx,	dx
 
@@ -626,7 +653,7 @@ show_main_menu:
 		je 		madeby
 		
 		cmp		al, '4'
-		je		fim
+		je		fim_menu
 
 		call	wrong_input
 		jmp		show_main_menu
@@ -742,9 +769,9 @@ cheetah_0:
 	jmp		bonus_game_start
 
 edit_board:
-		lea		dx, BonusGameBoardView
-		mov		ah, 09H
-		int		21h
+		; lea		dx, BonusGameBoardView
+		; mov		ah, 09H
+		; int		21h
 		call	changeBoard
 		jmp 	show_main_menu
 
@@ -804,8 +831,6 @@ game_stats:
 		jmp		stats
 
 madeby:
-		; lea 	dx, Credits
-		; call	Imp_Fich
 		lea		dx, CreditsView
 		mov		ah, 09h
 		int		21h
@@ -813,6 +838,12 @@ madeby:
 		int 	21h
 		jmp		show_main_menu
 
+fim_menu:
+		pop	dx
+		pop	cx
+		pop	bx
+		pop	ax
+		ret
 menu_controller endp
 ; :::::::::::::::::: Controlador do Menu ::::::::::::::::::
 
@@ -832,12 +863,18 @@ LE_TECLA	endp
 ; Change Game Board
 
 changeBoard proc
+		push	ax
+		push	bx
+		xor		si, si
+setup_view:
+		lea		dx, BonusGameBoardView
+		mov		ah, 09H
+		int		21h
 		mov 	bl, 11
 		mov		bh, 33
 		mov		posx, bh
 		mov		posy, bl
 		goto_xy	posx, posy
-
 LER_SETA:
 		xor		bx, bx
 		call 	LE_TECLA
@@ -845,8 +882,9 @@ LER_SETA:
 		je		ESTEND
 		CMP 	AL, 27	; ESCAPE
 		je		fim_ler_seta
-
-		cmp		al, 32
+		cmp		al, 'h'
+		je		help
+		cmp		al, 32			; space
 		jne 	LER_SETA
 
 		mov		ah, 08H
@@ -859,11 +897,24 @@ LER_SETA:
 		mov		ah, 02H
 		mov		dl, ' '
 		int		21H
+		push	bx				; guardar bx na pilha (nao perder o valor)
+		mov		bl, posx		; guardo o x em bx
+		push	ax				; guardar ax na pilha (nao perder o valor)
+		mov		ax,	80			; guardar o nr. de celulas que cada linha tem em ax
+		mul		posy			; multiplicar o nr. de celulas pela posicao em y (corresponde ao nr. de linhas)
+		add		bx, ax			; adicionar a posicao de x ao resultado da multiplicacao = nr da celula atual do cursor
+		mov		si, bx			; colocar esse valor em si por comodidade
+		pop		ax				; retirar os valores da pilha
+		pop 	bx				; retirar os valores da pilha
+		mov	BonusGameBoardView[si], ' '	; colocar 'space' na string
 		inc		posx
 		goto_xy posx, posy
 		mov		ah, 02H
 		mov		dl, ' '
 		int		21H
+		inc		si				; incrementar o si para que a posicao correspondente no ecra seja equivalente na string
+		mov	BonusGameBoardView[si], ' '	; colocar 'space' na string
+		dec		si				; voltar ao valor original (porque o cursor só anda nas celulas do lado esquerdo)
 		dec		posx
 		goto_xy	posx, posy
 		jmp 	LER_SETA
@@ -872,22 +923,39 @@ createMuro:
 		mov		ah, 02H
 		mov		dl, '#'
 		int		21H
+		push	bx
+		push	ax
+		mov		bl, posx
+		mov		ax, 80
+		mul		posy
+		add		bx, ax
+		pop		ax
+		mov		si, bx
+		pop		bx
+		mov	BonusGameBoardView[si], '#'	; colocar '#' na string
 		inc		posx
 		goto_xy posx, posy
 		mov		ah, 02H
 		mov		dl, '#'
 		int		21H
+		inc		si
+		mov	BonusGameBoardView[si], '#'	; colocar '#' na string
+		dec		si
 		dec		posx
 		goto_xy	posx, posy
 		jmp LER_SETA
 
 fim_ler_seta:
 		call clear_screen
+		lea	dx, bonus_map
+		call SaveBonusMap
+		pop	bx
+		pop	ax
 		ret
 		jmp		LER_SETA
 		
 ESTEND:		
-		cmp 		al,48h
+		cmp 	al,48h
 		jne		BAIXO
 		cmp		posy, 2			; para nao saltar fora do mapa
 		je		baixo	
@@ -900,7 +968,7 @@ BAIXO:
 		jne		ESQUERDA
 		cmp		posy, 21		; para nao saltar fora do mapa
 		je		esquerda
-		inc 		POSy		;Baixo
+		inc 	POSy		;Baixo
 		goto_xy	posx, posy
 		jmp		LER_SETA
 
@@ -917,7 +985,7 @@ ESQUERDA:
 DIREITA:
 		cmp		al,4Dh
 		jne		help
-		cmp		posx, 64			; para nao saltar fora do mapa
+		cmp		posx, 63			; para nao saltar fora do mapa
 		je		help 
 		inc		POSx		;Direita
 		inc		POSx		;Direita
@@ -925,11 +993,50 @@ DIREITA:
 		jmp	LER_SETA
 
 help:
-		cmp		al, 48h
-		jne		LER_SETA
+		call	clear_screen
+		lea		dx, MapEditorHelp
+		mov		ah, 09H
+		int		21h
+		call	get_menu_option
+		jmp		setup_view
 	
 changeBoard endp
 
+; passar em dx a handle para o ficheiro
+SaveBonusMap proc
+		mov		ah, 3ch				; Abrir o ficheiro para escrita
+		mov		cx, 00H				; Define o tipo de ficheiro 
+		;lea		dx, fname			; DX aponta para o nome do ficheiro 
+		int		21h				; Abre efectivamente o ficheiro (AX fica com o Handle do ficheiro)
+		jnc		escreve				; Se não existir erro escreve no ficheiro
+	
+		mov		ah, 09h
+		lea		dx, msgErrorCreate
+		int		21h
+	
+		jmp		fim
+
+escreve:
+		mov		bx, ax				; Coloca em BX o Handle
+		mov		ah, 40h				; indica que é para escrever
+    	
+		lea		dx, BonusGameBoardView		; DX aponta para a informação a escrever
+		mov		cx, 1920				; CX fica com o numero de bytes a escrever
+		int		21h				; Chama a rotina de escrita
+		jnc		close				; Se não existir erro na escrita fecha o ficheiro
+	
+		mov		ah, 09h
+		lea		dx, msgErrorWrite
+		int		21h
+close:
+		mov		ah,3eh				; fecha o ficheiro
+		int		21h
+		jnc		fim
+	
+		mov		ah, 09h
+		lea		dx, msgErrorClose
+		int		21h
+SaveBonusMap endp
 ; :::::::::::::::::: Obter Opção ::::::::::::::::::
 get_menu_option PROC
 	goto_xy		21, 20			; Vai para posição do cursor
@@ -1769,7 +1876,7 @@ INICIO:
 	MOV			ES,AX			
 	CALL 		clear_screen
 	call		menu_controller
-   fim:
+fim:
 	call clear_screen	
 	mov     ah,4ch
 	int     21h
