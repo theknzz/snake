@@ -1616,7 +1616,16 @@ generate_position:
 
 	cmp		al, '('
 	je		generate_position  ; se a maca for gerada estiver em cima da cobra
+	cmp		al, 'R'
+	je		generate_position	; se a maca a ser gerada estiver em cima do rato
+	mov al, head_x
+	cmp 	posx, al
+	jne cont_macas
+	mov al, head_y
+	cmp 	posy, al
+	je 		generate_position
 
+cont_macas:
 	xor		cx, cx
 	xor		ax, ax
 	xor		dx, dx
@@ -1673,6 +1682,7 @@ add_ratos proc
 	jmp		verifica_rato
 
 add_rato:
+	xor ax,ax
 	call	CalcAleat
 	call	valid_Xcoord
 	mov		rato_x, al
@@ -1680,6 +1690,27 @@ add_rato:
 	call	valid_Ycoord
 	mov		rato_y, al
 
+	goto_xy	rato_x, rato_y			; colocar o cursor nessa posicao
+	
+	mov		ah, 08H
+	mov		bh, 0				; le o caracter que esta na posicao atual do cursor
+	int		10h
+
+	cmp		al, '('
+	je		add_rato  ; se o rato for gerado estiver em cima da cobra
+	cmp		al, 'M'
+	je		add_rato	; se o rato for gerada estiver em cima das macas verdes
+	cmp		al, 'V'
+	je 		add_rato	; se o rato for gerada estiver em cima das macas maduras
+
+	mov al, head_x
+	cmp 	rato_x, al
+	jne cont_rato
+	mov al, head_y
+	cmp 	rato_y, al
+	je 		add_rato
+
+cont_rato:
   	xor ax,ax
 	xor bx,bx
 	mov al, 160
