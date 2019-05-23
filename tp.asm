@@ -89,7 +89,7 @@ DADOS	SEGMENT PARA 'DATA'
 								db	"  ##                                                              ##          ",13,10
 								db	"  ##                                                              ##          ",13,10
 								db	"  ##################################################################          ",13,10
-								db	"                                                                              ",13,10
+								db	"            SCORE:                           LEVEL:                           ",13,10
 								db	"                                                                             $",13,10
 							
 			StandardMapEditor	db	"                             DANGER NOODLE                                    ",13,10
@@ -115,7 +115,7 @@ DADOS	SEGMENT PARA 'DATA'
 								db	"  ##                                                              ##          ",13,10
 								db	"  ##                                                              ##          ",13,10
 								db	"  ##################################################################          ",13,10
-								db	"                                                                              ",13,10
+								db	"            SCORE:                           LEVEL:                           ",13,10
 								db	"                                                                             $",13,10
 								
 
@@ -788,8 +788,7 @@ bonus_game:
 	int		21H
 
 	call	get_menu_option
-; TODO : criar um menu geral para a escolha das dificuldades
-	
+
 	cmp		al, '1'
 	je		bonus_play
 
@@ -871,7 +870,7 @@ load_editor:
 		jmp	edit_board
 
 bonus_Game_start:
-	call	start_game  ; TODO: mudar para a rotina que vai criar o ambiente para o bonus game
+	call	start_bonus_game  
 	jmp		show_main_menu
 
 stats:
@@ -1054,7 +1053,7 @@ setup_view:
 		mov		ah, 09H
 		int		21h
 		mov 	bl, 11
-		mov		bh, 33
+		mov		bh, 34
 		mov		posx, bh
 		mov		posy, bl
 		goto_xy	posx, posy
@@ -1168,7 +1167,7 @@ ESQUERDA:
 DIREITA:
 		cmp		al,4Dh
 		jne		help
-		cmp		posx, 63			; para nao saltar fora do mapa
+		cmp		posx, 64		; para nao saltar fora do mapa
 		je		help 
 		inc		POSx		;Direita
 		inc		POSx		;Direita
@@ -1176,6 +1175,8 @@ DIREITA:
 		jmp	LER_SETA
 
 help:
+		cmp		al, 'h'
+		jne		LER_SETA
 		call	clear_screen
 		lea		dx, MapEditorHelp
 		mov		ah, 09H
@@ -2005,6 +2006,7 @@ continue_setup:
 	mov  	tam, 0
 	xor		ax, ax
 	; mov		al, tp_vida
+	call	mostra_pontuacao
 	call 	move_snake
 	cmp		al, 1Bh		; considerando que sempre o jogo acaba o jogador perdeu
 	call	are_you_sure_about_that
@@ -2017,6 +2019,66 @@ abv12:
 	mov 	direccao, 1
 	jmp continue_setup
 start_game endp
+
+start_bonus_game proc
+	lea	dx, map_editor
+	call	Imp_Fich
+
+	cmp		difficulty, 1
+	je		slug_level
+
+	cmp		difficulty, 2
+	je		hare_level
+	goto_xy	posxlevel, posylevel
+
+	lea		dx, cheetah_label
+	mov		ah,	09h
+	int		21h
+	jmp		@@asd
+
+slug_level:
+	goto_xy	posxlevel, posylevel
+	lea		dx, slug_label
+	mov		ah,	09h
+	int		21h
+	jmp		@@asd
+hare_level:
+	goto_xy	posxlevel, posylevel
+	lea		dx, hare_label
+	mov		ah,	09h
+	int		21h
+
+@@asd:
+	xor		ax,	ax
+	xor		bx, bx
+	; TODO: validar se a cabeça da cobra não nasce em cima de um muro
+	call 	CalcAleat
+	call	valid_Xcoord
+	mov 	head_x, al
+	mov 	tail_x, al
+	call	CalcAleat
+	call	valid_Ycoord
+	cmp al, 12
+	ja abv12
+	mov 	tail_y, al
+	inc 	al
+	mov 	head_y, al
+	mov 	direccao, 3
+continue_setup:	
+	mov  	tam, 0
+	xor		ax, ax
+	call 	move_snake		; TODO: mudar para o move do bonus
+	cmp		al, 1Bh		; considerando que sempre o jogo acaba o jogador perdeu
+	call	are_you_sure_about_that
+	call	game_over		; podemos validar o ESC para perguntar se quer mesmo sair
+	ret
+abv12:
+	mov 	tail_y, al
+	dec 	al
+	mov 	head_y, al
+	mov 	direccao, 1
+	jmp continue_setup
+start_bonus_game endp
 ; :::::::::::::::::: Start Game ::::::::::::::::::
 
 ; :::::::::::::::::: are_you_sure_about_that? ::::::::::::::::::
@@ -2043,11 +2105,10 @@ are_you_sure_about_that endp
 ; :::::::::::::::::: Game Over ::::::::::::::::::
 game_over proc
 	; TODO: rest em tudo o que é dados de jogo (para o caso do jogador querer voltar a jogar)
+	; acho que já está feito verificar
 wrong_0:
 	call	clear_screen
-	mov		tam, 1
-	; lea		dx, gameOver
-	; call	Imp_Fich
+	mov		tam,  1 ;; ANDRE: isto nao devia estar a 0 ?
 	lea		dx, GameOverView
 	mov		ah, 09h
 	int 	21h
@@ -2055,11 +2116,16 @@ wrong_0:
 	cmp		al, '1'					; jogador nao quer voltar a jogar
 	je		fim
 	cmp		al, '0'					; jogador quer voltar a jogar
-	jne		wrong
-	call	menu_controller
-wrong:								; se o input não for válido, alerta o jogador e volta a perguntar
-	call	wrong_input				; notifica o jogador do aviso
+	je		restart_game
+	
+	call	wrong_input
 	jmp		wrong_0
+restart_game:
+	xor		ax, ax
+	mov		nr_ratos, al
+	mov		nr_macas, al
+	mov		pontos, ax
+	call	menu_controller
 game_over endp
 ; :::::::::::::::::: Game Over ::::::::::::::::::
 
