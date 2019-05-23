@@ -1311,7 +1311,7 @@ rato:
 	; mov es:[si][bx+2], dx
 
 	mov al, difficulty
-	mov bl, 5
+	mov bl, 3
 	mul bl
 	cmp pontos, ax
 	jae neg_points				; se tiver menos pontos que os que deve retirar, retira todos os pontos que tem
@@ -1639,7 +1639,7 @@ wrong_input endp
 ; :::::::::::::::::: Imprime avisos de wrong input ::::::::::::::::::
 
 ; :::::::::::::::::: Calcula Aleatorio ::::::::::::::::::
-; author: Professor
+; author: Professor -> A MERDA QUE O STOR FEZ NAO FUNCIONAVA, POR ISSO EU FIZ UM QUE FUNCIONA
 ; CalcAleat - calcula um numero aleatorio de 16 bits
 ; Parametros passados pela pilha
 ; entrada:
@@ -1663,7 +1663,15 @@ CalcAleat proc near
 	mul dx
 	xchg dx,ax
 	xchg dl, dh
-	mov ax, 65521
+	MOV AX, ultimo_num_aleat
+	CMP ultimo_num_aleat, 0
+	JNE not_0
+	mov ax, 65521 
+	jmp fim_rand
+not_0:
+	MOV AX, ultimo_num_aleat
+	XOR AH,AH
+fim_rand:
 	mul dx
 	xchg al,ah
 	mov ultimo_num_aleat, ax
@@ -1719,11 +1727,15 @@ valid_Xcoord proc
 	xor		cx, cx
 
 	mov		al, dh
-	mov		cl, 30
+	mov		cl, 31
 	mul		cl
 	xor		cx, cx
 	mov		cl, 255
 	div		cl
+	cmp al, 31
+	jne not_31
+	mov al, 30
+not_31:
 	mov cl, 2
 	mul cl
 
@@ -1756,6 +1768,11 @@ valid_Ycoord proc
 	mov		cl, 255
 	div		cl
 	add		al, 2
+	cmp al, 20
+	jne not_20
+	mov al, 19
+not_20:
+
 	; jmp		valid_fim
 ; invalid_2:
 	; add		al, 4
@@ -1794,7 +1811,16 @@ generate_position:
 
 	cmp		al, '('
 	je		generate_position  ; se a maca for gerada estiver em cima da cobra
+	cmp		al, 'R'
+	je		generate_position	; se a maca a ser gerada estiver em cima do rato
+	mov al, head_x
+	cmp 	posx, al
+	jne cont_macas
+	mov al, head_y
+	cmp 	posy, al
+	je 		generate_position
 
+cont_macas:
 	xor		cx, cx
 	xor		ax, ax
 	xor		dx, dx
@@ -1841,7 +1867,6 @@ add_apple endp
 
 ; :::::::::::::::::: Adiciona Ratos ::::::::::::::::::
 add_ratos proc
-	
 	xor	ax, ax
 	xor	bx, bx
 	xor	cx, cx
@@ -1852,29 +1877,67 @@ add_ratos proc
 	jmp		verifica_rato
 
 add_rato:
+	xor ax,ax
 	call	CalcAleat
 	call	valid_Xcoord
 	mov		rato_x, al
 	call	CalcAleat
 	call	valid_Ycoord
 	mov		rato_y, al
+
+	goto_xy	rato_x, rato_y			; colocar o cursor nessa posicao
+	
+	mov		ah, 08H
+	mov		bh, 0				; le o caracter que esta na posicao atual do cursor
+	int		10h
+
+	cmp		al, '('
+	je		add_rato  ; se o rato for gerado estiver em cima da cobra
+	cmp		al, 'M'
+	je		add_rato	; se o rato for gerada estiver em cima das macas verdes
+	cmp		al, 'V'
+	je 		add_rato	; se o rato for gerada estiver em cima das macas maduras
+
+	mov al, head_x
+	cmp 	rato_x, al
+	jne cont_rato
+	mov al, head_y
+	cmp 	rato_y, al
+	je 		add_rato
+
+cont_rato:
+  	xor ax,ax
+	xor bx,bx
+	mov al, 160
+	mul rato_y
+	mov si,ax
+	mov al, 2
+	mul rato_x
+	mov bx,ax
+	mov dl,'R'
+	mov dh, 78h
+	mov es:[si][bx], dx
+	mov es:[si][bx+2], dx
+
+
+
 	; xor		ax, ax
 	; mov		ah, posx
 	; mov		al, posy
 	; mov		rato_x, ah
 	; mov		rato_y, al
-	goto_xy rato_x, rato_y
+	; goto_xy rato_x, rato_y
 	
-	mov		ah, 02H
-	mov		dl, 'R'
-	int		21H
-	inc		rato_x
-	goto_xy rato_x, rato_y
-	;dec		rato_x
+	; mov		ah, 02H
+	; mov		dl, 'R'
+	; int		21H
+	; inc		rato_x
+	; goto_xy rato_x, rato_y
+	; ;dec		rato_x
 
-	mov		ah, 02H
-	mov		dl, 'R'
-	int		21H
+	; mov		ah, 02H
+	; mov		dl, 'R'
+	; int		21H
 	;goto_xy rato_x, rato_y
 
 	mov		bl, nr_ratos
@@ -1913,52 +1976,55 @@ mata_rato:
 	
 	; mov	bl, 0
 	; mov	rato_nasce, bl
+	mov ax, 0ee2eh
+	mov es:[0], ax
+
 
 fim_add_rato:
 	ret
 add_ratos endp
 ; :::::::::::::::::: Adiciona Ratos ::::::::::::::::::
-verifica_rato proc
-	push ax
-	push bx
-	push dx
-	xor	ax, ax
-	mov	ah, 2ch
-	int	21H
+; verifica_rato proc
+; 	push ax
+; 	push bx
+; 	push dx
+; 	xor	ax, ax
+; 	mov	ah, 2ch
+; 	int	21H
 
-	mov al, dh
-	mov bl, 4
-	mul	bl
-	xor	bx, bx
-	mov	bl, 60
-	div	bl
-	xor	bx, bx
-	mov bl, tp_vida
-	sub	al, bl
-	cmp	al, 0
-	jbe	mata_rato
-	jmp	fim_1
+; 	mov al, dh
+; 	mov bl, 4
+; 	mul	bl
+; 	xor	bx, bx
+; 	mov	bl, 60
+; 	div	bl
+; 	xor	bx, bx
+; 	mov bl, tp_vida
+; 	sub	al, bl
+; 	cmp	al, 0
+; 	jbe	mata_rato
+; 	jmp	fim_1
 
-mata_rato:
-	goto_xy rato_x, rato_y
-	mov	ah, 02H
-	mov	dl, ' '
-	int	21H
-	mov	bl, rato_x
-	mov	posx, bl
-	inc	posx
-	goto_xy posx, rato_y
-	mov	ah, 02H
-	mov	dl, ' '
-	int 21H
-	goto_xy posx, posy
+; mata_rato:
+; 	goto_xy rato_x, rato_y
+; 	mov	ah, 02H
+; 	mov	dl, ' '
+; 	int	21H
+; 	mov	bl, rato_x
+; 	mov	posx, bl
+; 	inc	posx
+; 	goto_xy posx, rato_y
+; 	mov	ah, 02H
+; 	mov	dl, ' '
+; 	int 21H
+; 	goto_xy posx, posy
 
-fim_1:
-	pop dx
-	pop	bx
-	pop	ax
-	ret
-verifica_rato endp
+; fim_1:
+; 	pop dx
+; 	pop	bx
+; 	pop	ax
+; 	ret
+; verifica_rato endp
 ; :::::::::::::::::: Start Game ::::::::::::::::::
 start_game proc
 	lea		dx, GameBoardView
