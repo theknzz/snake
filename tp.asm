@@ -7,23 +7,25 @@ DADOS	SEGMENT PARA 'DATA'
 		POSx			db		40	; POSx pode ir [1..80]	
 	; :::::::::::::::::: Files in Memory ::::::::::::::::::
 		map_editor		db		'./files/map_editor.txt',0
+		statsFile		db		'./files/stats.txt',0
     ; :::::::::::::::::: Ficheiros em Memória ::::::::::::::::::
 
 	; :::::::::::::::::: File Handles ::::::::::::::::::
-		Erro_Open       db      'Erro ao tentar abrir o ficheiro$'
-		Erro_Ler_Msg    db      'Erro ao tentar ler do ficheiro$'
-		Erro_Close      db      'Erro ao tentar fechar o ficheiro$'
-		msgErrorCreate	db	"Ocorreu um erro na criacao do ficheiro!$"
-		msgErrorWrite	db	"Ocorreu um erro na escrita para ficheiro!$"
-		msgErrorClose	db	"Ocorreu um erro no fecho do ficheiro!$"
+		Erro_Open       db      'Erro ao tentar abrir o ficheiro!$'
+		Erro_Ler_Msg    db      'Erro ao tentar ler do ficheiro!$'
+		Erro_Close      db      'Erro ao tentar fechar o ficheiro!$'
+		msgErrorCreate	db		"Ocorreu um erro na criacao do ficheiro!$"
+		msgErrorWrite	db		"Ocorreu um erro na escrita para ficheiro!$"
+		msgErrorClose	db		"Ocorreu um erro no fecho do ficheiro!$"
 		HandleFich      dw      0
 		car_fich        db      ?
+		w_caracter		dw		?
 	; :::::::::::::::::: File Handles ::::::::::::::::::
 
 	; :::::::::::::::::: Handles ::::::::::::::::::
-
 		pontos			dw		0
 		str_aux			db		10 dup('$')
+		stats_string	dw		4 dup('$')
 	; :::::::::::::::::: Handles ::::::::::::::::::
 
 	; :::::::::::::::::: Warnings ::::::::::::::::::
@@ -31,7 +33,7 @@ DADOS	SEGMENT PARA 'DATA'
 	; :::::::::::::::::: Warnings ::::::::::::::::::
 
 	; :::::::::::::::::: Cobra Utils ::::::::::::::::::
-		tam				db 		1	; tamanho da cobra, menos 1 (facilita o uso do vetor)
+		tam				db 		0	; tamanho da cobra, menos 1 (facilita o uso do vetor)
 		snake_dir		db		620 dup(?) ; vetor de direçoes para cada "peça" da cobra
 		head_x			db		?
 		head_y			db		?	
@@ -304,8 +306,6 @@ DADOS	SEGMENT PARA 'DATA'
 								db	"                                                                             ",13,10
 								db	"                                                                            $",13,10
 
-
-
 			StatsView 			db	"                                                                             ",13,10
 								db	"                                                                             ",13,10
 								db	"                  dMMMMb  .aMMMb  dMMMMb  .aMMMMP dMMMMMP dMMMMb             ",13,10
@@ -329,9 +329,8 @@ DADOS	SEGMENT PARA 'DATA'
 								db	"                  > Average play:                                            ",13,10  ; (34, 20)
 								db	"                                                                             ",13,10
 								db	"                      Press any key to get back to menu...                   ",13,10
-								db	"                      (Debbug - needs to be implemented)                     ",13,10
+								db	"                                                                             ",13,10
 								db	"                                                                            $",13,10
-
 
 			HowToPlayView		db	"                                                                             ",13,10
 								db	"                                                                             ",13,10
@@ -428,7 +427,7 @@ DADOS	SEGMENT PARA 'DATA'
 								db	"                                                                             ",13,10
 								db	"                                                                             ",13,10
 								db	"                                                                             ",13,10
-								db	"                         Do you wuant to play again?                         ",13,10
+								db	"                         Do you want to play again?                         ",13,10
 								db	"                                                                             ",13,10
 								db	"             o---------o                                o---------o          ",13,10
 								db	"             | 0 - yes |                                | 1 - no  |          ",13,10
@@ -478,10 +477,10 @@ DADOS	SEGMENT PARA 'DATA'
 		conta_RD		db		0
 		game_id			db		000
 		
-		nr_games		db		"10$"
-		best_play 		db 		"100$"
-		average_play	db		"50$"
-		worst_play		db		"20$"
+		nr_games		dw		0
+		best_play 		dw 		0
+		worst_play		dw		0
+		average_play	dw		0
 
 		difficulty		db		? 	; (?) Multiplier para pontuação
 		conta_maca		db		0
@@ -523,6 +522,9 @@ CODIGO	SEGMENT PARA 'CODE'
 ;  > param: posx - coluna, posy - lina 
 ;------------------------------------------------------------------------
 GOTO_XY		MACRO	POSX,POSY
+			push ax
+			push bx
+			;push dx
 			xor bx, bx
 			xor	ax, ax
 			xor	dx, dx
@@ -531,6 +533,9 @@ GOTO_XY		MACRO	POSX,POSY
 			MOV	DL,POSX
 			MOV	DH,POSY
 			INT	10H
+			;pop dx
+			pop bx
+			pop ax
 ENDM
 
 
@@ -590,7 +595,6 @@ clear_screen	proc
 		push bx
 		xor	bx,bx
 		mov	cx,25*80
-		
 apaga:	
 		mov	byte ptr es:[bx],' '
 		mov	byte ptr es:[bx+1],7
@@ -683,8 +687,6 @@ push	dx
 	xor		dx,	dx
 
 show_main_menu:
-		; lea		dx, Menu
-		; call	Imp_Fich
 		lea		dx, MainMenuView
 		mov		ah, 09h
 		int 	21h
@@ -710,8 +712,6 @@ show_main_menu:
 		jmp		show_main_menu
 
 tutorial:
-		; lea		dx,	TutorialFile
-		; call	Imp_Fich				; imprime o ficheiro corresponde ao tutorial
 		lea		dx, HowToPlayView
 		mov		ah, 09h
 		int 	21h
@@ -719,9 +719,6 @@ tutorial:
 		jmp		show_main_menu          ; volta ao menu principal
 
 gameopts:
-		
-		; lea		dx,	newGame				; imprime o ficheiro corresponde ao menu de jogo
-		; call	Imp_Fich
 		lea		dx, newGameView
 		mov		ah, 09h
 		int 	21h
@@ -861,15 +858,15 @@ new_editor:
 		mov		ah, 09H
 		int		21h
 		call	changeBoard							; rotina para editar o mapa
-		jmp		edit_board
+		jmp		bonus_play
 
 load_editor:
 		lea		dx, map_editor
 		call	LoadEditorToMemory
 		call	changeBoard
-		jmp	edit_board
+		jmp		bonus_play
 
-bonus_Game_start:
+bonus_game_start:
 	call	start_bonus_game  
 	jmp		show_main_menu
 
@@ -901,26 +898,109 @@ game_history:
 		jmp		stats
 
 game_stats:
+		call	LoadStats
+		xor		bx, bx
 		lea		dx, StatsView
 		mov		ah, 09H
 		int		21H
 
-		goto_xy 31, 16
-		lea		dx, nr_games
-		mov		ah, 09H
-		int		21H
-		goto_xy	31, 17
-		lea		dx, best_play
-		mov		ah, 09H
-		int		21H
-		goto_xy	32, 18
-		lea		dx, worst_play
-		mov		ah, 09H
-		int		21H
-		goto_xy	34, 19
-		lea		dx, average_play
-		mov		ah, 09H
-		int		21H
+		goto_xy 31, 17
+		mov		ax, nr_games
+		call	NumbersIntoChars
+
+display_nrgames:
+		xor		dl, dl
+		mov		ah, 02h
+		mov		dl, str_aux[si]
+		int		21h
+		mov		dx, nr_games
+		mov		stats_string[bx], dx
+		inc		bx
+		inc		bx
+		cmp		si, 0
+		je		bp_1
+		dec		si				; caso haja mais digitos para imprimir
+
+		jmp		display_nrgames
+
+bp_1:
+		; mov stats_string[bx], 13
+		; inc		bx
+		; inc	bx
+		; mov stats_string[bx], 10
+		; inc		bx
+		; inc		bx
+		inc bx
+		goto_xy	31, 18
+		mov	ax, best_play
+		call NumbersIntoChars
+
+display_bp:
+		xor		dl, dl
+		mov		ah, 02h
+		mov		dl, str_aux[si]
+		int		21h
+		mov		dx, best_play
+		mov		stats_string[bx], dx
+		inc		bx
+		inc		bx
+		cmp		si, 0
+		je		wp_1
+		dec		si
+		jmp		display_bp
+
+wp_1:
+		; mov stats_string[bx], 13
+		; inc		bx
+		; inc	bx
+		; mov stats_string[bx], 10
+		; inc		bx
+		; inc bx
+		goto_xy	32, 19
+		mov		ax, worst_play
+		call	NumbersIntoChars
+
+display_wp:
+		xor		dl, dl
+		mov		ah, 02h
+		mov		dl, str_aux[si]
+		int		21h
+		mov		dx, worst_play
+		mov		stats_string[bx], dx
+		inc		bx
+		inc		bx
+		cmp		si, 0
+		je		avg_1
+		dec		si
+		jmp		display_wp
+		
+avg_1:		
+		; mov stats_string[bx], 13
+		; inc		bx
+		; inc	bx
+		; mov stats_string[bx], 10
+		; inc		bx
+		; inc bx
+		goto_xy	34, 20
+		mov		ax, average_play
+		call	NumbersIntoChars
+
+display_average:		
+		xor		dl, dl
+		mov		ah, 02h
+		mov		dl, str_aux[si]
+		int		21h
+		mov		dx, average_play
+		mov		stats_string[bx], dx
+		inc		bx
+		inc		bx
+		cmp		si, 0
+		je		fim_stats
+		dec		si
+		jmp		display_average
+
+fim_stats:
+		call 	SaveStats
 		call	get_menu_option
 		jmp		stats
 
@@ -971,9 +1051,6 @@ ler_ciclo:
 		mov		dl, car_fich
 		mov		MapEditor[si], dl
 		inc		si
-        ; mov     ah,02h				; coloca o caracter no ecran
-	    ; mov	    dl,car_fich			; este é o caracter a enviar para o ecran
-	    ; int	    21h					; imprime no ecran
 
 	    jmp	    ler_ciclo			; continua a ler o ficheiro
 
@@ -1232,6 +1309,176 @@ fim_save:
 		pop	ax
 		ret
 SaveBonusMap endp
+
+LoadStats proc
+		push ax
+		push bx
+		push cx
+		push dx
+		xor si, si
+		lea		dx, statsFile
+        mov     ah,3dh				; vamos abrir ficheiro para leitura 
+        mov     al,0				; tipo de ficheiro
+        int     21h					; abre para leitura 
+        jc      erro_abrir			; pode aconter erro a abrir o ficheiro 
+        mov     HandleFich,ax		; ax devolve o Handle para o ficheiro 
+        jmp     ler_ciclo			; depois de abero vamos ler o ficheiro 
+
+erro_abrir:
+        mov     ah,09h
+        lea     dx,Erro_Open
+        int     21h
+        jmp     sai
+
+ler_ciclo:
+        mov     ah,3fh				; indica que vai ser lido um ficheiro 
+        mov     bx,HandleFich		; bx deve conter o Handle do ficheiro previamente aberto 
+        mov     cx,2				; numero de bytes a ler
+        lea     dx,w_caracter			; vai ler para o local de memoria apontado por dx (car_fich)
+        int     21h					; faz efectivamente a leitura
+	    jc	    erro_ler			; se carry é porque aconteceu um erro
+		cmp		ax, 0
+	    je	    fecha_ficheiro		; se EOF fecha o ficheiro
+		mov		dx, w_caracter
+		mov		stats_string[si], dx
+		add		si, 2
+		jmp		ler_ciclo
+
+load_ng:
+		xor 	si, si
+		mov		dx, stats_string[si]
+		mov		nr_games, dx
+	    jmp	    ler_ciclo			; continua a ler o ficheiro
+
+load_bp:
+		inc si
+		inc si
+		mov		dx, stats_string[si]
+		mov		best_play, dx
+	    jmp	    ler_ciclo			; continua a ler o ficheiro
+
+load_wp:
+		inc si
+		inc si
+		mov		dx, stats_string[si]
+		mov		worst_play, dx
+	    jmp	    ler_ciclo			; continua a ler o ficheiro
+
+load_avg:
+		inc si
+		inc si
+		mov		dx, stats_string[si]
+		mov		average_play, dx
+	    jmp	    ler_ciclo			; continua a ler o ficheiro
+
+erro_ler:
+        mov     ah,09h
+        lea     dx,Erro_Ler_Msg
+        int     21h
+
+fecha_ficheiro:					; vamos fechar o ficheiro 
+        mov     ah,3eh
+        mov     bx,HandleFich
+        int     21h
+        jnc     sai
+
+        mov     ah,09h			; o ficheiro pode não fechar correctamente
+        lea     dx,Erro_Close
+        Int     21h
+sai:	  
+		pop dx
+		pop cx
+		pop bx
+		pop ax
+		RET
+LoadStats endp
+
+SaveStats proc
+		push	ax
+		push	bx
+		push	cx
+		push 	dx
+		mov		ah, 3ch				; Abrir o ficheiro para escrita
+		mov		cx, 00H				; Define o tipo de ficheiro 
+		lea		dx, statsFile			; DX aponta para o nome do ficheiro 
+		int		21h				; Abre efectivamente o ficheiro (AX fica com o Handle do ficheiro)
+		jnc		escreve				; Se não existir erro escreve no ficheiro
+	
+		mov		ah, 09h
+		lea		dx, msgErrorCreate
+		int		21h
+	
+		jmp		fim
+
+escreve:
+		mov		bx, ax				; Coloca em BX o Handle
+		mov		ah, 40h				; indica que é para escrever
+    	
+		lea		dx, stats_string		; DX aponta para a informação a escrever
+		mov		cx, 8			; CX fica com o numero de bytes a escrever
+		int		21h					; Chama a rotina de escrita
+		jnc		close				; Se não existir erro na escrita fecha o ficheiro
+	
+		mov		ah, 09h
+		lea		dx, msgErrorWrite
+		int		21h
+close:
+		mov		ah,3eh				; fecha o ficheiro
+		int		21h
+		jnc		save_stats_fim
+	
+		mov		ah, 09h
+		lea		dx, msgErrorClose
+		int		21h
+save_stats_fim:
+		pop	dx
+		pop	cx
+		pop	bx
+		pop	ax
+		ret
+SaveStats endp
+
+UpdateStats proc
+		push bx
+		push ax
+		push cx
+		xor bx, bx
+		xor ax, ax
+		xor cx, cx
+		inc nr_games
+		mov	bx, pontos
+
+		cmp	bx, worst_play
+		jbe	update_wp
+
+valid_1:
+		cmp bx, best_play
+		jge	update_bp
+
+		jmp	update_avg
+
+update_wp:
+		mov	worst_play, bx
+		jmp valid_1
+
+update_bp:
+		mov	best_play, bx
+
+update_avg:
+		mov	cx, nr_games
+		mov	ax, average_play
+		dec cx
+		mul	cx					; total de pontos acumulados em nr_games jogos
+		add	ax, bx				; adicionar os pontos do jogo atual
+		inc	cx
+		div	cx
+		mov	average_play, ax
+fim_update:
+		pop cx
+		pop ax
+		pop bx
+		ret
+UpdateStats endp
 ; :::::::::::::::::: Obter Opção ::::::::::::::::::
 get_menu_option PROC
 	goto_xy		21, 20			; Vai para posição do cursor
@@ -1253,7 +1500,6 @@ move_snake PROC
 CICLO:
 	call		add_ratos
 	call 		dir_vector
-	; call		get_menu_option
 	goto_xy		head_x,head_y		; Vai para nova posição
 	mov 		ah, 08h				; Guarda o Caracter que está na posição do Cursor
 	mov			bh,0				; numero da página
@@ -1297,19 +1543,6 @@ maca_madura:
 
 rato:
 	xor ax,ax
-
-	; xor bx,bx
-	; mov al, 160
-	; mul rato_y
-	; mov si,ax
-	; mov al, 2
-	; mul rato_x
-	; mov bx,ax
-	; mov dl,' '
-	; mov dh, 60h
-	; mov es:[si][bx], dx
-	; mov es:[si][bx+2], dx
-
 	mov al, difficulty
 	mov bl, 3
 	mul bl
@@ -1579,6 +1812,7 @@ mostra_pontuacao proc    ; 8 bits max pontos
 	xor		dx, dx
 	xor		ax, ax
 	xor		bx, bx
+	mov		cx, cx
 	mov		bx, 10
 	mov		AX, pontos
 
@@ -1605,7 +1839,8 @@ display_pont:
 	jmp		display_pont
 
 fim_mostra:
-	goto_xy	posx, posy  		
+	goto_xy	posx, posy
+	;call 	limpa_aux
 	pop		dx
 	pop		cx
 	pop		bx
@@ -1614,6 +1849,45 @@ fim_mostra:
 mostra_pontuacao endp
 ; :::::::::::::::::: Mostra Pontuação ::::::::::::::::::
 
+limpa_aux proc
+	push cx
+	mov	cx, 12
+	mov	si, cx 
+	mov	str_aux[si], '$'
+	dec	cx
+	loop limpa_aux
+	pop cx
+	ret
+limpa_aux endp
+
+; recebe nr. para converter em ax
+NumbersIntoChars proc
+	push	bx
+	push	cx
+	push	dx
+	xor		si, si
+	xor		dx, dx
+	xor		bx, bx
+	mov		cx, cx
+	mov		bx, 10
+
+break_chars_0:
+	xor		dx, dx
+	div		bx					; ah fica com o caracter a converter para ascii
+	add		dl, 30h				; para converter para ascii
+	mov		str_aux[si], dl
+	cmp		ax, 0
+	je		fim_transform
+	inc		si
+	jmp		break_chars_0
+
+fim_transform:
+	;call 	limpa_aux
+	pop		dx
+	pop		cx
+	pop		bx
+	ret
+NumbersIntoChars endp
 ; :::::::::::::::::: MACRO Imprime String ::::::::::::::::::
 ; macro para imprimir uma string no stdout
 ; params - recebe a string que vai imprimir
@@ -2071,7 +2345,6 @@ hare_level:
 continue_setup:	
 	mov  	tam, 0
 	xor		ax, ax
-	; mov		al, tp_vida
 	call	mostra_pontuacao
 	call 	move_snake
 	cmp		al, 1Bh		; considerando que sempre o jogo acaba o jogador perdeu
@@ -2087,8 +2360,11 @@ abv12:
 start_game endp
 
 start_bonus_game proc
-	lea	dx, map_editor
-	call	Imp_Fich
+	lea		dx, map_editor
+	call	LoadEditorToMemory
+	lea	dx, MapEditor
+	mov		ah, 09H
+	int		21h
 
 	cmp		difficulty, 1
 	je		slug_level
@@ -2133,6 +2409,7 @@ hare_level:
 continue_setup:	
 	mov  	tam, 0
 	xor		ax, ax
+	call	mostra_pontuacao
 	call 	move_snake		; TODO: mudar para o move do bonus
 	cmp		al, 1Bh		; considerando que sempre o jogo acaba o jogador perdeu
 	call	are_you_sure_about_that
@@ -2172,26 +2449,36 @@ are_you_sure_about_that endp
 game_over proc
 	; TODO: rest em tudo o que é dados de jogo (para o caso do jogador querer voltar a jogar)
 	; acho que já está feito verificar
+	push ax
+	push dx
+	push bx
 wrong_0:
+	call	UpdateStats
 	call	clear_screen
-	mov		tam,  1 ;; ANDRE: isto nao devia estar a 0 ?
+	mov		tam, 0
 	lea		dx, GameOverView
 	mov		ah, 09h
 	int 	21h
 	call	get_menu_option
 	cmp		al, '1'					; jogador nao quer voltar a jogar
-	je		fim
+	je		fim_game_over
 	cmp		al, '0'					; jogador quer voltar a jogar
 	je		restart_game
 	
 	call	wrong_input
 	jmp		wrong_0
+
 restart_game:
-	xor		ax, ax
-	mov		nr_ratos, al
-	mov		nr_macas, al
-	mov		pontos, ax
+	mov		nr_ratos, 0
+	mov		nr_macas, 0
+	mov		pontos, 0
 	call	menu_controller
+
+fim_game_over:
+	pop bx
+	pop dx
+	pop ax
+	jmp	fim
 game_over endp
 ; :::::::::::::::::: Game Over ::::::::::::::::::
 
