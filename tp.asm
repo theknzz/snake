@@ -31,7 +31,7 @@ DADOS	SEGMENT PARA 'DATA'
 	; :::::::::::::::::: Warnings ::::::::::::::::::
 
 	; :::::::::::::::::: Cobra Utils ::::::::::::::::::
-		tam				db 		1	; tamanho da cobra, menos 1 (facilita o uso do vetor)
+		tam				db 		0	; tamanho da cobra, menos 1 (facilita o uso do vetor)
 		snake_dir		db		620 dup(?) ; vetor de direçoes para cada "peça" da cobra
 		head_x			db		?
 		head_y			db		?	
@@ -490,6 +490,7 @@ DADOS	SEGMENT PARA 'DATA'
 		nr_ratos		db		0
 		rato_x			db 		?
 		rato_y			db		?
+		rato_mov		db 		?
 		tp_vida			db		?
 		rato_nasce		db		?
 
@@ -1279,6 +1280,7 @@ maca_verde:
 	inc 	maca
 	dec		nr_macas
 	call 	limpa_maca
+	dec	nr_macas
 	jmp 	cont_ciclo
 
 maca_madura:
@@ -1293,6 +1295,7 @@ maca_madura:
 	inc	 	maca
 	dec		nr_macas
 	call 	limpa_maca
+	dec	nr_macas
 	jmp 	cont_ciclo
 
 rato:
@@ -1319,14 +1322,15 @@ rato:
 
 neg_points:
 	sub pontos, ax
-	call	mostra_pontuacao 	; Mostra prontuação
+	call mostra_pontuacao 	; Mostra prontuação
+	call limpa_maca
 	call come_rato
 
 cont_ciclo:
-		cmp maca, 0					
+		cmp maca, 0
 		ja dec_maca
 
-	;; Limpar o rasto da cabeça da cobra
+	;; Limpar a cauda da cobra
 
 		goto_xy		tail_x,tail_y		; Vai para a posição anterior do cursor
 		mov			ah, 02h
@@ -1520,16 +1524,16 @@ limpa_maca proc
 	mov dx, 3720h
 	mov es:[si][bx], dx
 	mov es:[si][bx+2], dx
-	dec	nr_macas
 
 	ret
 
 limpa_maca endp
 
 come_rato proc
-
 	xor cx,cx
 	xor bx,bx
+	cmp tam, 0
+	je 	fim_come_rato
 	mov cx, 5
 	cmp tam, 5
 	jae ciclo_rato
@@ -1565,6 +1569,9 @@ dir_baix:
 fim_rato:
 	dec tam
 loop ciclo_rato
+fim_come_rato:
+	mov nr_ratos, 0
+	mov rato_mov, 0
 	ret
 come_rato endp
 ; :::::::::::::::::: Movimento da Cobra ::::::::::::::::::
@@ -1877,6 +1884,9 @@ add_ratos proc
 	jmp		verifica_rato
 
 add_rato:
+	cmp rato_mov, 4
+	jb wait_to_spawn
+
 	xor ax,ax
 	call	CalcAleat
 	call	valid_Xcoord
@@ -1963,6 +1973,24 @@ TempoDeVida:
 	jge	mata_rato
 	jmp fim_add_rato
 mata_rato:
+
+	xor ax,ax
+	xor bx,bx
+	mov al, 160
+	mul rato_y
+	mov si,ax
+	mov al, 2
+	mul rato_x
+	mov bx,ax
+	mov dl,' '
+	mov dh, 67h
+	mov es:[si][bx], dx
+	mov es:[si][bx+2], dx
+
+	mov nr_ratos, 0
+	mov rato_mov, 0
+	jmp fim_add_rato
+
 	; goto_xy rato_x, rato_y
 	; mov	ah, 02H
 	; mov	dl, ' '
@@ -1976,9 +2004,10 @@ mata_rato:
 	
 	; mov	bl, 0
 	; mov	rato_nasce, bl
-	mov ax, 0ee2eh
-	mov es:[0], ax
-
+	; mov ax, 0ee2eh     -> teste... apagar antes de enviar
+	; mov es:[0], ax		-> same ^
+wait_to_spawn:
+	inc rato_mov
 
 fim_add_rato:
 	ret
@@ -2070,6 +2099,8 @@ hare_level:
 	mov 	direccao, 3
 continue_setup:	
 	mov  	tam, 0
+	mov 	nr_ratos, 0
+	mov 	rato_mov, 99
 	xor		ax, ax
 	; mov		al, tp_vida
 	call	mostra_pontuacao
@@ -2117,33 +2148,55 @@ hare_level:
 @@asd:
 	xor		ax,	ax
 	xor		bx, bx
-	; TODO: validar se a cabeça da cobra não nasce em cima de um muro
+	; TODO: validar se a cabeça da cobra não nasce em cima de um muro   -> DONE! maybe
 	call 	CalcAleat
 	call	valid_Xcoord
 	mov 	head_x, al
 	mov 	tail_x, al
 	call	CalcAleat
 	call	valid_Ycoord
+	mov 	tail_y, al
+	goto_xy	head_x, tail_y			; colocar o cursor nessa posicao
+	
+	mov		ah, 08H
+	mov		bh, 0				; le o caracter que esta na posicao atual do cursor
+	int		10h
+	cmp al, '#'
+	je @@asd	
 	cmp al, 12
 	ja abv12
-	mov 	tail_y, al
+	mov 	al, tail_y
 	inc 	al
 	mov 	head_y, al
 	mov 	direccao, 3
+	jmp test_pos
+
 continue_setup:	
 	mov  	tam, 0
+	mov 	rato_mov, 99
 	xor		ax, ax
 	call 	move_snake		; TODO: mudar para o move do bonus
 	cmp		al, 1Bh		; considerando que sempre o jogo acaba o jogador perdeu
 	call	are_you_sure_about_that
 	call	game_over		; podemos validar o ESC para perguntar se quer mesmo sair
 	ret
+
 abv12:
-	mov 	tail_y, al
+	mov 	al, tail_y
 	dec 	al
 	mov 	head_y, al
 	mov 	direccao, 1
+	jmp test_pos
+
+test_pos:
+	goto_xy head_x, head_y
+	mov		ah, 08H
+	mov		bh, 0				; le o caracter que esta na posicao atual do cursor
+	int		10h
+	cmp al, '#'
+	je @@asd
 	jmp continue_setup
+
 start_bonus_game endp
 ; :::::::::::::::::: Start Game ::::::::::::::::::
 
@@ -2174,7 +2227,7 @@ game_over proc
 	; acho que já está feito verificar
 wrong_0:
 	call	clear_screen
-	mov		tam,  1 ;; ANDRE: isto nao devia estar a 0 ?
+	mov		tam,  0 ;; ANDRE: isto nao devia estar a 0 ?
 	lea		dx, GameOverView
 	mov		ah, 09h
 	int 	21h
