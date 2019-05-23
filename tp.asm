@@ -6,7 +6,7 @@ DADOS	SEGMENT PARA 'DATA'
 		POSy			db		10	; a linha pode ir de [1 .. 25]
 		POSx			db		40	; POSx pode ir [1..80]	
 	; :::::::::::::::::: Files in Memory ::::::::::::::::::
-		bonus_map		db		'./files/bonus_map.txt',0
+		map_editor		db		'./files/map_editor.txt',0
     ; :::::::::::::::::: Ficheiros em Memória ::::::::::::::::::
 
 	; :::::::::::::::::: File Handles ::::::::::::::::::
@@ -66,7 +66,7 @@ DADOS	SEGMENT PARA 'DATA'
 								db	"            SCORE:                           LEVEL:                           ",13,10
 								db	"                                                                             $",13,10
 
-			BonusGameBoardView	db	"                             DANGER NOODLE                                    ",13,10
+			MapEditor			db	"                             DANGER NOODLE                                    ",13,10
 								db	"  ##################################################################          ",13,10
 								db	"  ##                                                              ##          ",13,10
 								db	"  ##                                                              ##          ",13,10
@@ -89,7 +89,33 @@ DADOS	SEGMENT PARA 'DATA'
 								db	"  ##                                                              ##          ",13,10
 								db	"  ##                                                              ##          ",13,10
 								db	"  ##################################################################          ",13,10
-								db	"            SCORE:                           LEVEL:                           ",13,10
+								db	"                                                                              ",13,10
+								db	"                                                                             $",13,10
+							
+			StandardMapEditor	db	"                             DANGER NOODLE                                    ",13,10
+								db	"  ##################################################################          ",13,10
+								db	"  ##                                                              ##          ",13,10
+								db	"  ##                                                              ##          ",13,10
+								db	"  ##                                                              ##          ",13,10
+								db	"  ##                                                              ##          ",13,10
+								db	"  ##                                                              ##          ",13,10
+								db	"  ##                                                              ##          ",13,10
+								db	"  ##                                                              ##          ",13,10
+								db	"  ##                                                              ##          ",13,10
+								db	"  ##                                                              ##          ",13,10
+								db	"  ##                                                              ##          ",13,10
+								db	"  ##                                                              ##          ",13,10
+								db	"  ##                                                              ##          ",13,10
+								db	"  ##                                                              ##          ",13,10
+								db	"  ##                                                              ##          ",13,10
+								db	"  ##                                                              ##          ",13,10
+								db	"  ##                                                              ##          ",13,10
+								db	"  ##                                                              ##          ",13,10
+								db	"  ##                                                              ##          ",13,10
+								db	"  ##                                                              ##          ",13,10
+								db	"  ##                                                              ##          ",13,10
+								db	"  ##################################################################          ",13,10
+								db	"                                                                              ",13,10
 								db	"                                                                             $",13,10
 								
 
@@ -135,10 +161,10 @@ DADOS	SEGMENT PARA 'DATA'
 								db 	"              dMP dMP  VMMMP   VMMMP  dMMMMP  dMMMMMP dMMMMMP                ",13,10
 								db	"                                                                             ",13,10
 								db	"                                                                             ",13,10
-								db  "               o--------------------------------------------------o          ",13,10
-								db  "               |   1   |    2   |     3     |     4      |    5   |          ",13,10
-								db 	"               | Slug  |  Hare  |  Cheetah  | Edit Board |  Back  |          ",13,10
-								db 	"               o--------------------------------------------------o          ",13,10
+								db  "                       o----------------------------o                        ",13,10
+								db  "                       |   1  |     2      |    3   |                        ",13,10
+								db 	"                       | Play | Edit Board |  Back  |                        ",13,10
+								db 	"                       o----------------------------o                        ",13,10
 								db	"                                                                             ",13,10
 								db 	"      Insert Option >                                                        ",13,10
 								db	"                                                                             ",13,10
@@ -172,6 +198,31 @@ DADOS	SEGMENT PARA 'DATA'
 								db	"                                                                             ",13,10
 								db	"                                                                            $",13,10
 
+				EditorMapMenu	db	"                                                                             ",13,10
+								db	"                                                                             ",13,10
+								db	"                  dMMMMb  .aMMMb  dMMMMb  .aMMMMP dMMMMMP dMMMMb             ",13,10
+								db	"                 dMP VMP dMP dMP dMP dMP dMP     dMP     dMP.dMP             ",13,10
+								db  "                dMP dMP dMMMMMP dMP dMP dMP MMP dMMMP   dMMMMK               ",13,10
+								db 	"               dMP.aMP dMP dMP dMP dMP dMP.dMP dMP     dMP AMF               ",13,10
+								db 	"              dMMMMP  dMP dMP dMP dMP  VMMMP  dMMMMMP dMP dMP                ",13,10
+								db  "                                                                             ",13,10
+								db 	"                  dMMMMb  .aMMMb  .aMMMb  dMMMMb  dMP     dMMMMMP            ",13,10
+								db 	"                 dMP dMP dMP dMP dMP dMP dMP VMP dMP     dMP                 ",13,10
+								db 	"                dMP dMP dMP dMP dMP dMP dMP dMP dMP     dMMMP                ",13,10
+								db 	"               dMP dMP dMP.aMP dMP.aMP dMP.aMP dMP     dMP                   ",13,10
+								db 	"              dMP dMP  VMMMP   VMMMP  dMMMMP  dMMMMMP dMMMMMP                ",13,10
+								db	"                                                                             ",13,10
+								db	"                                                                             ",13,10
+								db  "                       o---------------------------------o                   ",13,10
+								db  "                       |      1     |      2      |   3  |                   ",13,10
+								db 	"                       | New Editor | Load Editor | Back |                   ",13,10
+								db 	"                       o---------------------------------o                   ",13,10
+								db	"                                                                             ",13,10
+								db 	"      Insert Option >                                                        ",13,10
+								db	"                                                                             ",13,10
+								db	"                                                                             ",13,10
+								db	"                                                                             ",13,10
+								db	"                                                                            $",13,10
 
 
 			CreditsView			db	"                                                                             ",13,10
@@ -540,7 +591,7 @@ clear_screen	proc
 		xor	bx,bx
 		mov	cx,25*80
 		
-apaga:		
+apaga:	
 		mov	byte ptr es:[bx],' '
 		mov	byte ptr es:[bx+1],7
 		inc	bx
@@ -737,6 +788,26 @@ bonus_game:
 	int		21H
 
 	call	get_menu_option
+; TODO : criar um menu geral para a escolha das dificuldades
+	
+	cmp		al, '1'
+	je		bonus_play
+
+	cmp		al, '2'
+	je		edit_board
+
+	cmp		al, '3'
+	je		gameopts
+
+	call	wrong_input
+	jmp		bonus_game
+
+bonus_play:
+	lea		dx, ChooseDifficultyView
+	mov		ah, 09H
+	int		21h
+
+	call	get_menu_option
 
 	cmp 	al , '1'
 	je 		slug_0
@@ -748,13 +819,10 @@ bonus_game:
 	je		cheetah_0
 
 	cmp		al, '4'
-	je		edit_board
-
-	cmp		al, '5'
-	je		gameopts
+	je		bonus_game
 
 	call	wrong_input
-	jmp		bonus_game
+	jmp		bonus_play
 
 slug_0:
 	mov		factor, 100
@@ -769,14 +837,41 @@ cheetah_0:
 	jmp		bonus_game_start
 
 edit_board:
-		; lea		dx, BonusGameBoardView
-		; mov		ah, 09H
-		; int		21h
+		lea		dx, EditorMapMenu
+		mov		ah, 09H
+		int		21H
+		
+		call	get_menu_option
+
+		cmp		al, '1'
+		je		new_editor
+
+		cmp		al, '2'
+		je		load_editor
+
+		cmp		al, '3'
+		je		bonus_game
+
+		call	wrong_input
+		jmp		edit_board
+
+new_editor:
+; TODO - corrigir SetupNewEditor ou criar uma string nova para o new_editor
+		;call	SetupNewEditor
+		lea		dx, StandardMapEditor				; vai buscar o ponteiro da a string
+		mov		ah, 09H
+		int		21h
+		call	changeBoard							; rotina para editar o mapa
+		jmp		edit_board
+
+load_editor:
+		lea		dx, map_editor
+		call	LoadEditorToMemory
 		call	changeBoard
-		jmp 	show_main_menu
+		jmp	edit_board
 
 bonus_Game_start:
-	call	start_game  ; mudar para a rotina que vai criar o ambiente para o bonus game
+	call	start_game  ; TODO: mudar para a rotina que vai criar o ambiente para o bonus game
 	jmp		show_main_menu
 
 stats:
@@ -845,6 +940,94 @@ fim_menu:
 		pop	ax
 		ret
 menu_controller endp
+
+;recebe handle do ficheiro em dx
+LoadEditorToMemory proc
+		push	ax
+		push	bx
+		push	cx
+		xor		si,si
+		mov     ah,3dh				; vamos abrir ficheiro para leitura 
+        mov     al,0				; tipo de ficheiro
+        int     21h					; abre para leitura 
+        jc      erro_abrir			; pode aconter erro a abrir o ficheiro 
+        mov     HandleFich,ax		; ax devolve o Handle para o ficheiro 
+        jmp     ler_ciclo			; depois de abero vamos ler o ficheiro 
+
+erro_abrir:
+        mov     ah,09h
+        lea     dx,Erro_Open
+        int     21h
+        jmp     sai
+
+ler_ciclo:
+        mov     ah,3fh				; indica que vai ser lido um ficheiro 
+        mov     bx,HandleFich		; bx deve conter o Handle do ficheiro previamente aberto 
+        mov     cx,1				; numero de bytes a ler 
+        lea     dx,car_fich			; vai ler para o local de memoria apontado por dx (car_fich)
+        int     21h					; faz efectivamente a leitura
+	    jc	    erro_ler			; se carry é porque aconteceu um erro
+	    cmp	    ax,0				; EOF?	verifica se já estamos no fim do ficheiro 
+	    je	    fecha_ficheiro		; se EOF fecha o ficheiro 
+		mov		dl, car_fich
+		mov		MapEditor[si], dl
+		inc		si
+        ; mov     ah,02h				; coloca o caracter no ecran
+	    ; mov	    dl,car_fich			; este é o caracter a enviar para o ecran
+	    ; int	    21h					; imprime no ecran
+
+	    jmp	    ler_ciclo			; continua a ler o ficheiro
+
+erro_ler:
+        mov     ah,09h
+        lea     dx,Erro_Ler_Msg
+        int     21h
+
+fecha_ficheiro:					; vamos fechar o ficheiro 
+        mov     ah,3eh
+        mov     bx,HandleFich
+        int     21h
+        jnc     sai
+
+        mov     ah,09h			; o ficheiro pode não fechar correctamente
+        lea     dx,Erro_Close
+        Int     21h
+sai:	
+		pop	cx
+		pop	bx
+		pop	ax
+		RET
+LoadEditorToMemory endp
+
+
+SetupNewEditor proc
+	push	ax
+	push	bx
+	push	cx
+
+	xor	si, si
+	xor	cx, cx
+	mov	si, 161		; comecar na primeira posicao do editor
+
+ciclo_0:
+	cmp	si, 1626				; ultima posicao do editor
+	je	fim_setup
+	cmp	cx, 61					; cada linha do editor tem 
+	je	next_line
+	mov	MapEditor[si], ' '
+	inc	cx
+	jmp	ciclo_0
+
+next_line:
+	add	si, 17 ; para saltar para a linha de baixo no editor
+	xor	cx, cx
+	jmp	ciclo_0
+
+fim_setup:
+	pop	cx
+	pop	bx
+	pop	ax
+SetupNewEditor endp
 ; :::::::::::::::::: Controlador do Menu ::::::::::::::::::
 
 LE_TECLA	PROC
@@ -867,7 +1050,7 @@ changeBoard proc
 		push	bx
 		xor		si, si
 setup_view:
-		lea		dx, BonusGameBoardView
+		lea		dx, MapEditor
 		mov		ah, 09H
 		int		21h
 		mov 	bl, 11
@@ -880,8 +1063,8 @@ LER_SETA:
 		call 	LE_TECLA
 		cmp		ah, 1
 		je		ESTEND
-		CMP 	AL, 27	; ESCAPE
-		je		fim_ler_seta
+		CMP 	AL, 's'	; ESCAPE
+		je		save
 		cmp		al, 'h'
 		je		help
 		cmp		al, 32			; space
@@ -906,14 +1089,14 @@ LER_SETA:
 		mov		si, bx			; colocar esse valor em si por comodidade
 		pop		ax				; retirar os valores da pilha
 		pop 	bx				; retirar os valores da pilha
-		mov	BonusGameBoardView[si], ' '	; colocar 'space' na string
+		mov	MapEditor[si], ' '	; colocar 'space' na string
 		inc		posx
 		goto_xy posx, posy
 		mov		ah, 02H
 		mov		dl, ' '
 		int		21H
 		inc		si				; incrementar o si para que a posicao correspondente no ecra seja equivalente na string
-		mov	BonusGameBoardView[si], ' '	; colocar 'space' na string
+		mov	MapEditor[si], ' '	; colocar 'space' na string
 		dec		si				; voltar ao valor original (porque o cursor só anda nas celulas do lado esquerdo)
 		dec		posx
 		goto_xy	posx, posy
@@ -932,22 +1115,22 @@ createMuro:
 		pop		ax
 		mov		si, bx
 		pop		bx
-		mov	BonusGameBoardView[si], '#'	; colocar '#' na string
+		mov	MapEditor[si], '#'	; colocar '#' na string
 		inc		posx
 		goto_xy posx, posy
 		mov		ah, 02H
 		mov		dl, '#'
 		int		21H
 		inc		si
-		mov	BonusGameBoardView[si], '#'	; colocar '#' na string
+		mov	MapEditor[si], '#'	; colocar '#' na string
 		dec		si
 		dec		posx
 		goto_xy	posx, posy
 		jmp LER_SETA
 
-fim_ler_seta:
+save:
 		call clear_screen
-		lea	dx, bonus_map
+		lea	dx, map_editor
 		call SaveBonusMap
 		pop	bx
 		pop	ax
@@ -1004,6 +1187,10 @@ changeBoard endp
 
 ; passar em dx a handle para o ficheiro
 SaveBonusMap proc
+push	ax
+push	bx
+push	cx
+push	dx
 		mov		ah, 3ch				; Abrir o ficheiro para escrita
 		mov		cx, 00H				; Define o tipo de ficheiro 
 		;lea		dx, fname			; DX aponta para o nome do ficheiro 
@@ -1020,7 +1207,7 @@ escreve:
 		mov		bx, ax				; Coloca em BX o Handle
 		mov		ah, 40h				; indica que é para escrever
     	
-		lea		dx, BonusGameBoardView		; DX aponta para a informação a escrever
+		lea		dx, MapEditor		; DX aponta para a informação a escrever
 		mov		cx, 1920				; CX fica com o numero de bytes a escrever
 		int		21h				; Chama a rotina de escrita
 		jnc		close				; Se não existir erro na escrita fecha o ficheiro
@@ -1031,11 +1218,18 @@ escreve:
 close:
 		mov		ah,3eh				; fecha o ficheiro
 		int		21h
-		jnc		fim
+		jnc		fim_save
 	
 		mov		ah, 09h
 		lea		dx, msgErrorClose
 		int		21h
+
+fim_save:
+		pop	dx
+		pop	cx
+		pop	bx
+		pop	ax
+		ret
 SaveBonusMap endp
 ; :::::::::::::::::: Obter Opção ::::::::::::::::::
 get_menu_option PROC
