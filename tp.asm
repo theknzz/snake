@@ -148,7 +148,7 @@ DADOS	SEGMENT PARA 'DATA'
 								db	"                                                                            $",13,10
 
 
-	BonusChooseDifficultyView 	db	"                                                                             ",13,10
+				BonusMenuView 	db	"                                                                             ",13,10
 								db	"                                                                             ",13,10
 								db	"                  dMMMMb  .aMMMb  dMMMMb  .aMMMMP dMMMMMP dMMMMb             ",13,10
 								db	"                 dMP VMP dMP dMP dMP dMP dMP     dMP     dMP.dMP             ",13,10
@@ -163,10 +163,10 @@ DADOS	SEGMENT PARA 'DATA'
 								db 	"              dMP dMP  VMMMP   VMMMP  dMMMMP  dMMMMMP dMMMMMP                ",13,10
 								db	"                                                                             ",13,10
 								db	"                                                                             ",13,10
-								db  "                       o----------------------------o                        ",13,10
-								db  "                       |   1  |     2      |    3   |                        ",13,10
-								db 	"                       | Play | Edit Board |  Back  |                        ",13,10
-								db 	"                       o----------------------------o                        ",13,10
+								db  "                    o-----------------------------------o                    ",13,10
+								db  "                    |   1  |    2     |    3     |  4   |                    ",13,10
+								db 	"                    | Play | Load Map | Edit Map | Back |                    ",13,10
+								db 	"                    o-----------------------------------o                    ",13,10
 								db	"                                                                             ",13,10
 								db 	"      Insert Option >                                                        ",13,10
 								db	"                                                                             ",13,10
@@ -780,7 +780,7 @@ classic_game:
 		jmp		show_main_menu
 
 bonus_game:
-	lea		dx, BonusChooseDifficultyView
+	lea		dx, BonusMenuView
 	mov		ah, 09H
 	int		21H
 
@@ -790,10 +790,13 @@ bonus_game:
 	je		bonus_play
 
 	cmp		al, '2'
-	je		edit_board
+	je		load_map
 
 	cmp		al, '3'
-	je		gameopts
+	je		edit_board
+
+	cmp		al, '4'
+	je 		gameopts
 
 	call	wrong_input
 	jmp		bonus_game
@@ -822,15 +825,23 @@ bonus_play:
 
 slug_0:
 	mov		factor, 100
+	mov		difficulty, 1
 	jmp		bonus_game_start
 
 hare_0:
 	mov		factor, 50
+	mov		difficulty, 2
 	jmp		bonus_game_start
 
 cheetah_0:
 	mov		factor, 25
+	mov		difficulty, 3
 	jmp		bonus_game_start
+
+load_map:
+	lea		dx, map_editor
+	call	LoadEditorToMemory
+	jmp		bonus_play
 
 edit_board:
 		lea		dx, EditorMapMenu
