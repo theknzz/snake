@@ -4,12 +4,12 @@
 - [x] Movimento da cobra (standard)
 - [ ] Movimento da cobra (bonus)
 - [x] Cobra a aumentar
-- [ ] Cobra a diminuir de tamanho
+- [x] Cobra a diminuir de tamanho
 - [x] Atualizar a cobra no mapa
 
 ## Mapa
 - [x] Limites do mapa (standard)
-- [ ] Limites do mapa (bonus)
+- [x] Limites do mapa (bonus)
 - [x] Poder editar o mapa (meter muros, ...) `not completed`
 
 ## Ficheiros
@@ -29,8 +29,8 @@
 
 ## Niveis
 - [x] Diferenciar a velocidade e pontos dos niveis
-- [ ] Multiplier de pontuação
+- [x] Multiplier de pontuação
 
 ## GameOver
-- [ ] Voltar a jogar `not completed` (falta limpar os dados)
+- [x] Voltar a jogar `not completed` (falta limpar os dados)
 - [ ] Guardar informação nos respetivos ficheiros  
