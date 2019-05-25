@@ -29,7 +29,7 @@ DADOS	SEGMENT PARA 'DATA'
 	; :::::::::::::::::: Handles ::::::::::::::::::
 
 	; :::::::::::::::::: Warnings ::::::::::::::::::
-		Erro_Input		db		'WARNING: Input invalido (Press any key to continue...) $'
+		Erro_Input		db		'WARNING: Invalid input (Press any key to continue...) $'
 	; :::::::::::::::::: Warnings ::::::::::::::::::
 
 	; :::::::::::::::::: Cobra Utils ::::::::::::::::::
@@ -864,7 +864,6 @@ edit_board:
 		jmp		edit_board
 
 new_editor:
-; TODO - corrigir SetupNewEditor ou criar uma string nova para o new_editor
 		;call	SetupNewEditor
 		lea		dx, StandardMapEditor				; vai buscar o ponteiro da a string
 		mov		ah, 09H
@@ -1523,7 +1522,7 @@ CICLO:
 	je			maca_verde
 	cmp			al, 'M'
 	je 			maca_madura
-	cmp			al, 'R'
+	cmp			al, '.'
 	je			rato
 
 	jmp cont_ciclo
@@ -1577,16 +1576,33 @@ cont_ciclo:
 	;; Limpar a cauda da cobra
 
 		goto_xy		tail_x,tail_y		; Vai para a posição anterior do cursor
-		mov			ah, 02h
-		mov			dl, ' ' 		; Coloca ESPAÇO
-		int			21H
-		mov 		ah, tail_x
-		mov 		posxa, ah
-		inc			POSxa
-		goto_xy		POSxa,tail_y	
-		mov			ah, 02h
-		mov			dl, ' '			;  Coloca ESPAÇO
-		int			21H	
+		
+
+		xor ax,ax
+		xor bx,bx
+		mov al, 160
+		mul tail_y
+		mov si,ax
+		mov al, 2
+		mul tail_x
+		mov bx,ax
+		xor ax, ax
+		mov		al, ' '
+		mov		ah, 0fh
+		mov		es:[si][bx], ax
+		mov		es:[si][bx+2], ax
+
+
+		; mov			ah, 02h
+		; mov			dl, ' ' 		; Coloca ESPAÇO
+		; int			21H
+		; mov 		ah, tail_x
+		; mov 		posxa, ah
+		; inc			POSxa
+		; goto_xy		POSxa,tail_y	
+		; mov			ah, 02h
+		; mov			dl, ' '			;  Coloca ESPAÇO
+		; int			21H	
 		call 		move_tail
 
 
@@ -1602,17 +1618,44 @@ IMPRIME:
 		cmp 		al, '('				;  se houver cobra na posição atual, game over
 		je			fim_jogo
 
-		mov			ah, 02h
-		mov			dl, '('				; Coloca AVATAR1
-		int			21H
-		
-		mov 		ah, head_x
-		mov 		posx, ah
-		inc			POSx
-		goto_xy		posx,head_y		
-		mov			ah, 02h
-		mov			dl, ')'			; Coloca AVATAR2
-		int			21H	
+		; mov			ah, 02h
+		; mov			dl, '('				; Coloca AVATAR1
+		; int			21H
+
+		mov		al, head_y
+		mov		bx, 160
+		mul		bx
+		mov		bx, ax
+		mov		al, head_x
+		mov		dx, 2
+		mul		dx
+		add		bx, ax
+		xor		ax, ax
+
+		xor ax,ax
+		xor bx,bx
+		mov al, 160
+		mul head_y
+		mov si,ax
+		mov al, 2
+		mul head_x
+		mov bx,ax
+		xor ax, ax
+		mov		al, '('
+		mov		ah, 66h;22h
+		mov		es:[si][bx], ax
+
+
+		mov		al, ')'
+		mov		es:[si][bx+2], ax
+
+		; mov 		ah, head_x
+		; mov 		posx, ah
+		; inc			POSx
+		; goto_xy		posx,head_y		
+		; mov			ah, 02h
+		; mov			dl, ')'			; Coloca AVATAR2
+		; int			21H	
 
 		goto_xy		head_x, head_y		; Vai para posição do cursor
 		cmp			nr_macas, 0
@@ -1702,7 +1745,7 @@ DIREITA:
 
 fim_jogo:		
 		call		clear_screen
-		call		game_over;
+		call		game_over
 		RET
 
 dec_maca:
@@ -1711,6 +1754,363 @@ dec_maca:
 		jmp 		imprime
 
 move_snake ENDP
+
+tp_snake proc
+	push ax
+	push bx
+	xor ax, ax
+	xor bx, bx
+
+	mov	bl, tail_x
+	mov bh, tail_y
+
+	cmp tail_x, 2
+	je tp_dir1
+ctn_01:
+	cmp	tail_x, 66
+	je tp_esq1
+ctn_02:
+	cmp tail_y, 1
+	je	tp_bx1
+ctn_03:
+	cmp tail_y, 22
+	je	tp_cm1
+
+	jmp	avalia_tail
+
+tp_dir1:
+	mov	bl, direccao
+	cmp	bl, 2     ; se a direcao da cabeca for para a esquerdar
+	jne	ctn_01
+	mov	bh, 64
+	mov	tail_x, bh
+	jmp ctn_01
+tp_esq1:
+	mov bl, direccao
+	cmp bl, 0	; se a direcao da cabeca for para a direita
+	jne ctn_02
+	mov	bh, 4
+	mov	tail_x, bh
+	jmp ctn_02
+tp_bx1:
+	mov bl, direccao
+	cmp bl, 1  ; se a direcao da cabeca for para cima
+	jne ctn_03
+	mov bh, 21
+	mov	tail_y, bh
+	jmp ctn_03
+tp_cm1:
+	mov bl, direccao
+	cmp bl, 3		; se a direcao da cabeca for para baixo
+	jne avalia_tail
+	mov bh, 2
+	mov tail_y, bh
+
+
+avalia_tail:
+
+	mov al, head_x
+	mov ah, head_y
+
+	cmp head_x, 2
+	je tp_dir				; se esta no limite do lado esquerdo tp to lado direito
+ctn_1:
+	cmp	head_x, 66
+	je tp_esq
+ctn_2:
+	cmp head_y, 1
+	je	tp_bx
+ctn_3:
+	cmp head_y, 22
+	je	tp_cm
+	xor ax, ax
+	jmp fim_tp_snake
+tp_dir:
+	mov	al, direccao
+	cmp	al, 2				; se a cobra se estiver a mover para a esquerda
+	jne	ctn_1
+	mov	ah, 64
+	mov	head_x, ah
+	jmp ctn_1
+tp_esq:
+	mov al, direccao
+	cmp al, 0
+	jne ctn_2
+	mov	ah, 4
+	mov	head_x, ah
+	jmp ctn_2
+tp_bx:
+	mov al, direccao
+	cmp al, 1
+	jne ctn_3
+	mov ah, 21
+	mov	head_y, ah
+	jmp ctn_3
+tp_cm:
+	mov al, direccao
+	cmp al, 3
+	jne fim_tp_snake
+	mov ah, 2
+	mov head_y, ah
+
+fim_tp_snake:
+	goto_xy head_x, head_y
+	pop bx
+	pop ax
+	ret
+tp_snake endp
+
+bonus_move_snake PROC
+CICLO:
+	call		add_ratos
+	call 		dir_vector
+	;goto_xy		head_x,head_y		; Vai para nova posição
+	
+	call tp_snake
+
+	mov 		ah, 08h				; Guarda o Caracter que está na posição do Cursor
+	mov			bh,0				; numero da página
+	int			10h
+
+	cmp 		al, '#'				;  na posição do Cursor
+	je			fim_jogo
+	cmp 		al, 'V'
+	je			maca_verde
+	cmp			al, 'M'
+	je 			maca_madura
+	cmp			al, '.'
+	je			rato
+
+	jmp cont_ciclo
+
+maca_verde:
+	xor 	ax,ax
+	mov 	al, difficulty
+	add 	pontos, ax				; adiciona 1*dificuldade pontos
+	call	mostra_pontuacao 	; Mostra prontuação
+	call 	add_apple
+	inc 	maca
+	dec		nr_macas
+	call 	limpa_maca
+	dec	nr_macas
+	jmp 	cont_ciclo
+
+maca_madura:
+	xor 	ax,ax
+	mov 	al, difficulty
+	mov 	bl, 2
+	mul 	bl					
+	add 	pontos, ax				; adiciona 2*dificuldade pontos
+	call	mostra_pontuacao 	; Mostra prontuação
+	call 	add_apple
+	inc	 	maca
+	inc	 	maca
+	dec		nr_macas
+	call 	limpa_maca
+	dec	nr_macas
+	jmp 	cont_ciclo
+
+rato:
+	xor ax,ax
+	mov al, difficulty
+	mov bl, 3
+	mul bl
+	cmp pontos, ax
+	jae neg_points				; se tiver menos pontos que os que deve retirar, retira todos os pontos que tem
+	mov ax, pontos
+
+neg_points:
+	sub pontos, ax
+	call mostra_pontuacao 	; Mostra prontuação
+	call limpa_maca
+	call come_rato
+
+cont_ciclo:
+		cmp maca, 0
+		ja dec_maca
+
+	;; Limpar a cauda da cobra
+
+		goto_xy		tail_x,tail_y		; Vai para a posição anterior do cursor
+		
+
+		xor ax,ax
+		xor bx,bx
+		mov al, 160
+		mul tail_y
+		mov si,ax
+		mov al, 2
+		mul tail_x
+		mov bx,ax
+		xor ax, ax
+		mov		al, ' '
+		mov		ah, 0fh
+		mov		es:[si][bx], ax
+		mov		es:[si][bx+2], ax
+
+
+		; mov			ah, 02h
+		; mov			dl, ' ' 		; Coloca ESPAÇO
+		; int			21H
+		; mov 		ah, tail_x
+		; mov 		posxa, ah
+		; inc			POSxa
+		; goto_xy		POSxa,tail_y	
+		; mov			ah, 02h
+		; mov			dl, ' '			;  Coloca ESPAÇO
+		; int			21H	
+		call 		move_tail
+
+
+
+IMPRIME:
+	;; Atualizar a cabeça da cobra
+		goto_xy		head_x,head_y		; Vai para posição do cursor
+		;call		verifica_rato
+		mov 		ah, 08h				; Guarda o Caracter que está na posição do Cursor
+		mov			bh,0				; numero da página
+		int			10h
+
+		cmp 		al, '('				;  se houver cobra na posição atual, game over
+		je			fim_jogo
+
+		; mov			ah, 02h
+		; mov			dl, '('				; Coloca AVATAR1
+		; int			21H
+
+		mov		al, head_y
+		mov		bx, 160
+		mul		bx
+		mov		bx, ax
+		mov		al, head_x
+		mov		dx, 2
+		mul		dx
+		add		bx, ax
+		xor		ax, ax
+
+		xor ax,ax
+		xor bx,bx
+		mov al, 160
+		mul head_y
+		mov si,ax
+		mov al, 2
+		mul head_x
+		mov bx,ax
+		xor ax, ax
+		mov		al, '('
+		mov		ah, 66h;22h
+		mov		es:[si][bx], ax
+
+
+		mov		al, ')'
+		mov		es:[si][bx+2], ax
+
+		; mov 		ah, head_x
+		; mov 		posx, ah
+		; inc			POSx
+		; goto_xy		posx,head_y		
+		; mov			ah, 02h
+		; mov			dl, ')'			; Coloca AVATAR2
+		; int			21H	
+
+		goto_xy		head_x, head_y		; Vai para posição do cursor
+		cmp			nr_macas, 0
+		je			spawn_maca
+
+		jmp			LER_SETA
+
+spawn_maca:
+		call 	add_apple
+		inc		nr_macas
+		
+LER_SETA:	
+		call 		LE_TECLA_0
+		cmp			ah, 1
+		je			ESTEND
+		CMP 		AL, 27			; ESCAPE
+		jne			TESTE_END
+		jmp			fim
+		; call		are_you_sure_about_that
+TESTE_END:		
+		CALL		PASSA_TEMPO
+		mov			AX, PASSA_T_ant
+		CMP			AX, PASSA_T
+		je			LER_SETA
+		mov			AX, PASSA_T
+		mov			PASSA_T_ant, AX
+
+verifica_0:	
+		mov			al, direccao
+		cmp 		al, 0
+		jne			verifica_1
+		add			head_x, 2		;Direita
+		jmp			CICLO
+		
+verifica_1:	
+		mov 		al, direccao
+		cmp			al, 1
+		jne			verifica_2
+		dec			head_y		;cima
+		jmp			CICLO
+		
+verifica_2:	
+		mov 		al, direccao
+		cmp			al, 2
+		jne			verifica_3
+		sub 		head_x, 2		;Esquerda
+		jmp			CICLO
+		
+verifica_3:	
+		mov 		al, direccao
+		cmp			al, 3	
+		jne			CICLO
+		inc			head_y		;BAIXO	
+		jmp			CICLO
+		
+ESTEND:		
+		cmp 		al,48h
+		jne			BAIXO
+		cmp			snake_dir[0], 3
+		je			LER_SETA
+		mov			direccao, 1
+		jmp			LER_SETA
+
+BAIXO:
+		cmp			al,50h
+		jne			ESQUERDA
+		cmp			snake_dir[0], 1
+		je			LER_SETA
+		mov			direccao, 3
+		jmp			LER_SETA
+
+ESQUERDA:
+		cmp			al,4Bh
+		jne			DIREITA
+		cmp			snake_dir[0], 0
+		je			LER_SETA
+		mov			direccao, 2
+		jmp			LER_SETA
+
+DIREITA:
+		cmp			al,4Dh
+		jne			LER_SETA 
+		cmp			snake_dir[0], 2
+		je			LER_SETA
+		mov			direccao, 0
+		jmp			LER_SETA
+
+fim_jogo:		
+		call		clear_screen
+		call		game_over
+		RET
+
+dec_maca:
+		dec 		maca
+		inc 		tam
+		jmp 		imprime
+
+bonus_move_snake ENDP
+
 
 dir_vector PROC
 	xor si,si
@@ -1765,7 +2165,7 @@ limpa_maca proc
 	mov al, 2
 	mul head_x
 	mov bx,ax
-	mov dx, 3720h
+	mov dx, 0720h
 	mov es:[si][bx], dx
 	mov es:[si][bx+2], dx
 
@@ -1783,16 +2183,37 @@ come_rato proc
 	jae ciclo_rato
 	mov cl, tam
 ciclo_rato:
-	mov ah, tail_x
-	mov posx, ah
-	goto_xy tail_x, tail_y
-	mov dl,' '
-	mov ah,02h
-	int 21h
-	inc posx
-	goto_xy posx, tail_y
-	mov dl, ' '
-	int 21h
+	push ax
+	push bx
+	push dx
+
+	xor ax,ax
+	xor bx,bx
+	mov al, 160
+	mul tail_y
+	mov si,ax
+	mov al, 2
+	mul tail_x
+	mov bx,ax
+
+	mov dx, 0720h
+	mov es:[si][bx], dx
+	mov es:[si][bx+2], dx
+	
+	pop dx
+	pop bx
+	pop ax
+
+	; mov ah, tail_x
+	; mov posx, ah
+	; goto_xy tail_x, tail_y
+	; mov dl,' '
+	; mov ah,02h
+	; int 21h
+	; inc posx
+	; goto_xy posx, tail_y
+	; mov dl, ' '
+	; int 21h
 	mov bl, tam
 	cmp snake_dir[bx], 0
 	jne dir_cim
@@ -2103,7 +2524,7 @@ generate_position:
 
 	cmp		al, '('
 	je		generate_position  ; se a maca for gerada estiver em cima da cobra
-	cmp		al, 'R'
+	cmp		al, '.'
 	je		generate_position	; se a maca a ser gerada estiver em cima do rato
 	mov al, head_x
 	cmp 	posx, al
@@ -2132,7 +2553,7 @@ cont_macas:
 	mul posx
 	mov bx,ax
 	mov dl,'M'
-	mov dh, 45h
+	mov dh, 44h
 	mov es:[si][bx], dx
 	mov es:[si][bx+2], dx
 	jmp fim_add
@@ -2148,7 +2569,7 @@ maca_verde_0:
 	mul posx
 	mov bx,ax
 	mov dl,'V'
-	mov dh, 23h
+	mov dh, 22h
 	mov es:[si][bx], dx
 	mov es:[si][bx+2], dx
 
@@ -2169,7 +2590,7 @@ add_ratos proc
 	jmp		verifica_rato
 
 add_rato:
-	cmp rato_mov, 4
+	cmp rato_mov, 20
 	jb wait_to_spawn
 
 	xor ax,ax
@@ -2192,6 +2613,8 @@ add_rato:
 	je		add_rato	; se o rato for gerada estiver em cima das macas verdes
 	cmp		al, 'V'
 	je 		add_rato	; se o rato for gerada estiver em cima das macas maduras
+	cmp		al, '#'
+	je		add_rato	; se o rato gerado estiver em cima do muro
 
 	mov al, head_x
 	cmp 	rato_x, al
@@ -2209,8 +2632,8 @@ cont_rato:
 	mov al, 2
 	mul rato_x
 	mov bx,ax
-	mov dl,'R'
-	mov dh, 78h
+	mov dl,'.'
+	mov dh, 0ffh;78h
 	mov es:[si][bx], dx
 	mov es:[si][bx+2], dx
 
@@ -2268,7 +2691,7 @@ mata_rato:
 	mul rato_x
 	mov bx,ax
 	mov dl,' '
-	mov dh, 67h
+	mov dh, 7h;67h
 	mov es:[si][bx], dx
 	mov es:[si][bx+2], dx
 
@@ -2389,9 +2812,9 @@ continue_setup:
 	xor		ax, ax
 	call	mostra_pontuacao
 	call 	move_snake
-	cmp		al, 1Bh		; considerando que sempre o jogo acaba o jogador perdeu
-	call	are_you_sure_about_that
-	call	game_over		; podemos validar o ESC para perguntar se quer mesmo sair
+	; cmp		al, 1Bh		; considerando que sempre o jogo acaba o jogador perdeu
+	; call	are_you_sure_about_that
+	; call	game_over		; podemos validar o ESC para perguntar se quer mesmo sair
 	ret
 abv12:
 	mov 	tail_y, al
@@ -2418,6 +2841,7 @@ start_bonus_game proc
 	lea		dx, cheetah_label
 	mov		ah,	09h
 	int		21h
+
 	jmp		@@asd
 
 slug_level:
@@ -2463,10 +2887,10 @@ continue_setup:
 	mov 	rato_mov, 99
 	xor		ax, ax
 	call	mostra_pontuacao
-	call 	move_snake		; TODO: mudar para o move do bonus
+	call 	bonus_move_snake		; TODO: mudar para o move do bonus
 	cmp		al, 1Bh		; considerando que sempre o jogo acaba o jogador perdeu
-	call	are_you_sure_about_that
-	call	game_over		; podemos validar o ESC para perguntar se quer mesmo sair
+	; call	are_you_sure_about_that
+	; call	game_over		; podemos validar o ESC para perguntar se quer mesmo sair
 	ret
 
 abv12:
@@ -2553,6 +2977,7 @@ INICIO:
 	MOV			ES,AX			
 	CALL 		clear_screen
 	call		menu_controller
+	; call	bonus_move_snake
 fim:
 	call clear_screen	
 	mov     ah,4ch
