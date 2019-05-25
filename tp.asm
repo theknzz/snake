@@ -1890,7 +1890,6 @@ NumbersIntoChars proc
 	push	bx
 	push	cx
 	push	dx
-	push si
 	xor		si, si
 	xor		dx, dx
 	xor		bx, bx
@@ -1909,12 +1908,34 @@ break_chars_0:
 
 fim_transform:
 	;call 	limpa_aux
-	pop si
 	pop		dx
 	pop		cx
 	pop		bx
 	ret
 NumbersIntoChars endp
+
+show_str proc
+	push si
+	push ax
+	push cx
+	mov cx, 10
+	mov si, 9
+count_loop:
+	push cx
+	cmp str_aux[si], '$'
+	je dont
+	mov dl, str_aux[si]
+	mov ah, 02H
+	int 21h
+dont:
+	pop cx
+	dec si
+loop count_loop
+	pop cx
+	pop ax
+	pop si
+	ret
+show_str endp
 ; :::::::::::::::::: MACRO Imprime String ::::::::::::::::::
 ; macro para imprimir uma string no stdout
 ; params - recebe a string que vai imprimir
@@ -2724,11 +2745,11 @@ page_cycle:
 show_single_loop:
 	call limpa_aux
 	mov ax, aux_hist_value[si]
+	push si
 	call NumbersIntoChars
+	pop si
 	goto_xy posx,posy
-	mov		ah, 09h
-	lea		dx,	str_aux
-	int		21h	
+	call show_str
 					push ax
 		mov ax, 0be30h
 		add ax, si
