@@ -1780,29 +1780,29 @@ ctn_03:
 
 tp_dir1:
 	mov	bl, direccao
-	cmp	bl, 2     ; se a direcao da cabeca for para a esquerdar
-	jne	ctn_01
+	; cmp	bl, 2     ; se a direcao da cabeca for para a esquerdar
+	; jne	ctn_01
 	mov	bh, 64
 	mov	tail_x, bh
 	jmp ctn_01
 tp_esq1:
 	mov bl, direccao
-	cmp bl, 0	; se a direcao da cabeca for para a direita
-	jne ctn_02
+	; cmp bl, 0	; se a direcao da cabeca for para a direita
+	; jne ctn_02
 	mov	bh, 4
 	mov	tail_x, bh
 	jmp ctn_02
 tp_bx1:
 	mov bl, direccao
-	cmp bl, 1  ; se a direcao da cabeca for para cima
-	jne ctn_03
+	; cmp bl, 1  ; se a direcao da cabeca for para cima
+	; jne ctn_03
 	mov bh, 21
 	mov	tail_y, bh
 	jmp ctn_03
 tp_cm1:
 	mov bl, direccao
-	cmp bl, 3		; se a direcao da cabeca for para baixo
-	jne avalia_tail
+	; cmp bl, 3		; se a direcao da cabeca for para baixo
+	; jne avalia_tail
 	mov bh, 2
 	mov tail_y, bh
 
@@ -1944,7 +1944,7 @@ cont_ciclo:
 		mov bx,ax
 		xor ax, ax
 		mov		al, ' '
-		mov		ah, 0fh
+		mov		ah, 01fh
 		mov		es:[si][bx], ax
 		mov		es:[si][bx+2], ax
 
