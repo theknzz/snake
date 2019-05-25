@@ -24,8 +24,11 @@ DADOS	SEGMENT PARA 'DATA'
 
 	; :::::::::::::::::: Handles ::::::::::::::::::
 		pontos			dw		0
+		vidas 			db		2
 		str_aux			db		10 dup('$')
 		stats_string	dw		4 dup('$')
+		str_vidas		db		10 dup('$')
+		player_name     db 		5 dup('$')
 	; :::::::::::::::::: Handles ::::::::::::::::::
 
 	; :::::::::::::::::: Warnings ::::::::::::::::::
@@ -70,7 +73,7 @@ DADOS	SEGMENT PARA 'DATA'
 
 			MapEditor			db	"                             DANGER NOODLE                                    ",13,10
 								db	"  ##################################################################          ",13,10
-								db	"  ##                                                              ##          ",13,10
+								db	"  ##                                                              ##   LIFES  ",13,10
 								db	"  ##                                                              ##          ",13,10
 								db	"  ##                                                              ##          ",13,10
 								db	"  ##                                                              ##          ",13,10
@@ -413,31 +416,56 @@ DADOS	SEGMENT PARA 'DATA'
 								db	"                                                                            $",13,10
 
 				GameOverView	db	"                                                                             ",13,10
+								db	"                ::::::::      :::     ::::    ::::  ::::::::::               ",13,10
+								db	"               :+:    :+:   :+: :+:   +:+:+: :+:+:+ :+:                      ",13,10
+								db	"               +:+         +:+   +:+  +:+ +:+:+ +:+ +:+                      ",13,10
+								db	"               :#:        +#++:++#++: +#+  +:+  +#+ +#++:++#                 ",13,10
+								db	"               +#+   +#+# +#+     +#+ +#+       +#+ +#+                      ",13,10
+								db	"               #+#    #+# #+#     #+# #+#       #+# #+#                      ",13,10
+								db	"                ########  ###     ### ###       ### ##########               ",13,10
+								db	"                                                                             ",13,10
+								db	"                ::::::::  :::     ::: :::::::::: :::::::::                   ",13,10
+								db	"               :+:    :+: :+:     :+: :+:        :+:    :+:                  ",13,10
+								db	"               +:+    +:+ +:+     +:+ +:+        +:+    +:+                  ",13,10
+								db	"               +#+    +:+ +#+     +:+ +#++:++#   +#++:++#:                   ",13,10
+								db	"               +#+    +#+  +#+   +#+  +#+        +#+    +#+                  ",13,10
+								db	"               #+#    #+#   #+#+#+#   #+#        #+#    #+#                  ",13,10
+								db	"                ########      ###     ########## ###    ###                  ",13,10
 								db	"                                                                             ",13,10
 								db	"                                                                             ",13,10
-								db	"                                                                             ",13,10
-								db	"                                                                             ",13,10
-								db	"      *****                                  /**                   /**       ",13,10
-								db	"    **///**  ******   **********   *****    /**  ******   ****** ******      ",13,10
-								db  "   /**  /** //////** //**//**//** **///**   /** **////** **//// ///**/       ",13,10
-								db 	"    //******  *******  /** /** /**/*******   /**/**   /**//*****   /**       ",13,10
-								db 	"     /////** **////**  /** /** /**/**////    /**/**   /** /////**  /**       ",13,10
-								db  "      ***** //******** *** /** /**//******   ***//******  ******   //**      ",13,10
-								db 	"    /////   //////// ///  //  //  //////   ///  //////  //////     //        ",13,10
-								db	"                                                                             ",13,10
-								db	"                                                                             ",13,10
-								db	"                                                                             ",13,10
-								db	"                         Do you want to play again?                         ",13,10
-								db	"                                                                             ",13,10
+								db	"                          Do you want to play again?                         ",13,10
 								db	"             o---------o                                o---------o          ",13,10
 								db	"             | 0 - yes |                                | 1 - no  |          ",13,10
 								db	"             o---------o                                o---------o          ",13,10
 								db	"                                                                             ",13,10
 								db	"                                                                             ",13,10
+								db	"                                                                            $",13,10
+
+				SaveNameView	db	"                                                                             ",13,10
+								db	"                ::::::::      :::     ::::    ::::  ::::::::::               ",13,10
+								db	"               :+:    :+:   :+: :+:   +:+:+: :+:+:+ :+:                      ",13,10
+								db	"               +:+         +:+   +:+  +:+ +:+:+ +:+ +:+                      ",13,10
+								db	"               :#:        +#++:++#++: +#+  +:+  +#+ +#++:++#                 ",13,10
+								db	"               +#+   +#+# +#+     +#+ +#+       +#+ +#+                      ",13,10
+								db	"               #+#    #+# #+#     #+# #+#       #+# #+#                      ",13,10
+								db	"                ########  ###     ### ###       ### ##########               ",13,10
+								db	"                                                                             ",13,10
+								db	"                ::::::::  :::     ::: :::::::::: :::::::::                   ",13,10
+								db	"               :+:    :+: :+:     :+: :+:        :+:    :+:                  ",13,10
+								db	"               +:+    +:+ +:+     +:+ +:+        +:+    +:+                  ",13,10
+								db	"               +#+    +:+ +#+     +:+ +#++:++#   +#++:++#:                   ",13,10
+								db	"               +#+    +#+  +#+   +#+  +#+        +#+    +#+                  ",13,10
+								db	"               #+#    #+#   #+#+#+#   #+#        #+#    #+#                  ",13,10
+								db	"                ########      ###     ########## ###    ###                  ",13,10
+								db	"                                                                             ",13,10
+								db	"                                                                             ",13,10
+								db	"                                                                             ",13,10
+								db	"           Insert 4 digit name: _ _ _ _                                      ",13,10
+								db	"                                                                             ",13,10
+								db	"                  You can undo you changes with BACKSPACE!                   ",13,10
 								db	"                                                                             ",13,10
 								db	"                                                                             ",13,10
 								db	"                                                                            $",13,10
-
 
 				MapEditorHelp	db	"                                                                             ",13,10
 								db	"                                                                             ",13,10
@@ -453,14 +481,14 @@ DADOS	SEGMENT PARA 'DATA'
 								db 	"               dMP dMP dMP.aMP dMP.aMP dMP.aMP dMP     dMP                   ",13,10
 								db 	"              dMP dMP  VMMMP   VMMMP  dMMMMP  dMMMMMP dMMMMMP                ",13,10
 								db	"                                                                             ",13,10
-								db	"                      		      Editor Help                                 ",13,10
+								db	"                      		  ~ Editor Help ~                                 ",13,10
 								db	"                                                                             ",13,10
 								db	"              - Use the ARROW KEYS to mouve the cursor around                ",13,10
 								db	"                                                                             ",13,10
-								db	"              - To change between '#' and ' ' use SPACE BAR                  ",13,10
+								db	"              - To build a wall or destroy press SPACE                       ",13,10
 								db	"                                                                             ",13,10
-								db	"              - To save the file use ESC button                              ",13,10
-								db	"                                                                             ",13,10
+								db	"              - To save the file use 's' key and 'h' to read this help       ",13,10
+								db	"       file any time.                                                        ",13,10
 								db	"                          Press any key to go back...                        ",13,10
 								db	"                                                                             ",13,10
 								db	"                                                                            $",13,10
@@ -475,7 +503,7 @@ DADOS	SEGMENT PARA 'DATA'
 		conta_MM		db		0
 		conta_MV		db		0
 		conta_RD		db		0
-		game_id			db		000
+		game_id			db		0
 		
 		nr_games		dw		0
 		best_play 		dw 		0
@@ -864,7 +892,6 @@ edit_board:
 		jmp		edit_board
 
 new_editor:
-		;call	SetupNewEditor
 		lea		dx, StandardMapEditor				; vai buscar o ponteiro da a string
 		mov		ah, 09H
 		int		21h
@@ -1086,35 +1113,6 @@ sai:
 		RET
 LoadEditorToMemory endp
 
-
-SetupNewEditor proc
-	push	ax
-	push	bx
-	push	cx
-
-	xor	si, si
-	xor	cx, cx
-	mov	si, 161		; comecar na primeira posicao do editor
-
-ciclo_0:
-	cmp	si, 1626				; ultima posicao do editor
-	je	fim_setup
-	cmp	cx, 61					; cada linha do editor tem 
-	je	next_line
-	mov	MapEditor[si], ' '
-	inc	cx
-	jmp	ciclo_0
-
-next_line:
-	add	si, 17 ; para saltar para a linha de baixo no editor
-	xor	cx, cx
-	jmp	ciclo_0
-
-fim_setup:
-	pop	cx
-	pop	bx
-	pop	ax
-SetupNewEditor endp
 ; :::::::::::::::::: Controlador do Menu ::::::::::::::::::
 
 LE_TECLA	PROC
@@ -1136,6 +1134,12 @@ changeBoard proc
 		push	ax
 		push	bx
 		xor		si, si
+
+		lea		dx, MapEditorHelp
+		mov		ah, 09H
+		int		21h
+		call	get_menu_option
+		call	clear_screen
 setup_view:
 		lea		dx, MapEditor
 		mov		ah, 09H
@@ -1322,6 +1326,7 @@ fim_save:
 SaveBonusMap endp
 
 LoadStats proc
+; TODO: mudar a interrupção para nao criar o ficheiro mas abrir
 		push ax
 		push bx
 		push cx
@@ -1409,8 +1414,9 @@ SaveStats proc
 		push	bx
 		push	cx
 		push 	dx
-		mov		ah, 3ch				; Abrir o ficheiro para escrita
-		mov		cx, 00H				; Define o tipo de ficheiro 
+		mov		ah, 3dh				; Abrir o ficheiro para escrita
+		mov		al, 1				; abrir o ficheiro para escrever
+		;mov		cx, 00H				; Define o tipo de ficheiro 
 		lea		dx, statsFile			; DX aponta para o nome do ficheiro 
 		int		21h				; Abre efectivamente o ficheiro (AX fica com o Handle do ficheiro)
 		jnc		escreve				; Se não existir erro escreve no ficheiro
@@ -1504,6 +1510,13 @@ close:
 	jmp			fim
 
 get_menu_option endp
+
+get_char PROC
+	mov			ah,	07h 		; read char from input with echo
+	int			21h
+
+	ret
+get_char endp
 ; :::::::::::::::::: Obter Opção ::::::::::::::::::
 
 ; :::::::::::::::::: Movimento da Cobra ::::::::::::::::::
@@ -1743,7 +1756,7 @@ DIREITA:
 		mov			direccao, 0
 		jmp			LER_SETA
 
-fim_jogo:		
+fim_jogo:
 		call		clear_screen
 		call		game_over
 		RET
@@ -1862,6 +1875,7 @@ tp_snake endp
 
 bonus_move_snake PROC
 CICLO:
+	call		mostra_vidas
 	call		add_ratos
 	call 		dir_vector
 	;goto_xy		head_x,head_y		; Vai para nova posição
@@ -1933,7 +1947,6 @@ cont_ciclo:
 
 		goto_xy		tail_x,tail_y		; Vai para a posição anterior do cursor
 		
-
 		xor ax,ax
 		xor bx,bx
 		mov al, 160
@@ -1944,7 +1957,7 @@ cont_ciclo:
 		mov bx,ax
 		xor ax, ax
 		mov		al, ' '
-		mov		ah, 01fh
+		mov		ah, 0fh
 		mov		es:[si][bx], ax
 		mov		es:[si][bx+2], ax
 
@@ -2099,9 +2112,10 @@ DIREITA:
 		mov			direccao, 0
 		jmp			LER_SETA
 
-fim_jogo:		
+fim_jogo:
+		dec vidas
 		call		clear_screen
-		call		game_over
+		call		bonus_game_over
 		RET
 
 dec_maca:
@@ -2242,7 +2256,7 @@ come_rato endp
 ; :::::::::::::::::: Movimento da Cobra ::::::::::::::::::
 
 ; :::::::::::::::::: Mostra Pontuação ::::::::::::::::::
-mostra_pontuacao proc    ; 8 bits max pontos
+mostra_pontuacao proc 
 	push	ax
 	push	bx
 	push	cx
@@ -2279,22 +2293,69 @@ display_pont:
 
 fim_mostra:
 	goto_xy	posx, posy
-	;call 	limpa_aux
+	call 	limpa_aux
 	pop		dx
 	pop		cx
 	pop		bx
 	pop		ax
 	ret
 mostra_pontuacao endp
+
+mostra_vidas proc
+	push	ax
+	push	bx
+	push	cx
+	push	dx
+	xor		si, si
+	xor		dx, dx
+	xor		ax, ax
+	xor		bx, bx
+	mov		cx, cx
+	mov		bx, 10
+	mov		Al, vidas
+
+break_chars:
+	xor		dx, dx
+	div		bx					; ah fica com o caracter a converter para ascii
+	add		dl, 30h				; para converter para ascii
+	mov		str_vidas[si], dl
+	cmp		ax, 0
+	je		display
+	inc		si
+	jmp		break_chars
+	
+display:
+	goto_xy	72, 3
+display_pont:
+	xor		dl, dl
+	mov		ah, 02h
+	mov		dl, str_vidas[si]
+	int		21h
+	cmp		si, 0
+	je		fim_mostra
+	dec		si
+	jmp		display_pont
+
+fim_mostra:
+	goto_xy	posx, posy
+	pop		dx
+	pop		cx
+	pop		bx
+	pop		ax
+	ret
+mostra_vidas endp
 ; :::::::::::::::::: Mostra Pontuação ::::::::::::::::::
 
 limpa_aux proc
 	push cx
 	mov	cx, 12
-	mov	si, cx 
+	xor si, si 
+loop1:
 	mov	str_aux[si], '$'
 	dec	cx
-	loop limpa_aux
+	inc si
+	loop loop1
+
 	pop cx
 	ret
 limpa_aux endp
@@ -2526,6 +2587,12 @@ generate_position:
 	je		generate_position  ; se a maca for gerada estiver em cima da cobra
 	cmp		al, '.'
 	je		generate_position	; se a maca a ser gerada estiver em cima do rato
+	cmp 	al, '#'
+	je 		generate_position
+	cmp		al, 'M'
+	je 		generate_position
+	cmp 	al, 'V'
+	je 		generate_position
 	mov al, head_x
 	cmp 	posx, al
 	jne cont_macas
@@ -2615,7 +2682,8 @@ add_rato:
 	je 		add_rato	; se o rato for gerada estiver em cima das macas maduras
 	cmp		al, '#'
 	je		add_rato	; se o rato gerado estiver em cima do muro
-
+	cmp 	al, '.'
+	je 		add_rato
 	mov al, head_x
 	cmp 	rato_x, al
 	jne cont_rato
@@ -2812,6 +2880,7 @@ continue_setup:
 	xor		ax, ax
 	call	mostra_pontuacao
 	call 	move_snake
+	call	regista_nome
 	; cmp		al, 1Bh		; considerando que sempre o jogo acaba o jogador perdeu
 	; call	are_you_sure_about_that
 	; call	game_over		; podemos validar o ESC para perguntar se quer mesmo sair
@@ -2827,6 +2896,7 @@ start_game endp
 start_bonus_game proc
 	lea		dx, map_editor
 	call	LoadEditorToMemory
+start_game_1:
 	lea	dx, MapEditor
 	mov		ah, 09H
 	int		21h
@@ -2884,13 +2954,17 @@ hare_level:
 
 continue_setup:	
 	mov  	tam, 0
+	mov		nr_macas, 0
 	mov 	rato_mov, 99
 	xor		ax, ax
 	call	mostra_pontuacao
-	call 	bonus_move_snake		; TODO: mudar para o move do bonus
-	cmp		al, 1Bh		; considerando que sempre o jogo acaba o jogador perdeu
-	; call	are_you_sure_about_that
-	; call	game_over		; podemos validar o ESC para perguntar se quer mesmo sair
+	call 	bonus_move_snake
+	cmp		vidas, 0
+	JE		fim_bonus_game
+	jmp	start_game_1
+
+fim_bonus_game:
+	call	regista_nome
 	ret
 
 abv12:
@@ -2912,6 +2986,83 @@ test_pos:
 start_bonus_game endp
 ; :::::::::::::::::: Start Game ::::::::::::::::::
 
+regista_nome proc
+	call clear_screen
+	push ax
+	lea dx, SaveNameView
+	mov	ah, 09H
+	int 21h
+	call get_player_name
+
+	; call clear_screen
+	; lea dx, player_name
+	; mov ah, 09H
+	; int 21H
+	; call get_menu_option
+
+	pop ax
+	ret
+regista_nome endp
+
+get_player_name proc
+	push ax
+	push bx
+	push cx
+	push dx
+	xor si, si
+	mov cx, 4
+	mov posx, 32
+ciclo:
+	goto_xy		posx, 19			; Vai para posição do cursor
+	call get_char
+	cmp	al, 13				; enter
+	je	fim_name
+	cmp al, 08 			; backspace
+	je	apaga_char
+	
+	cmp al, 61h  ; 'a'
+	jge to_caps
+
+tb:
+	mov ah, 02
+	mov dl, al
+	int 21h
+	jmp add_char
+
+to_caps:
+	sub al, 32
+	jmp tb
+
+add_char:
+	mov player_name[si], dl
+	add posx, 2
+	inc si
+	loop ciclo
+	jmp fim_name
+
+apaga_char:
+	mov	ah, 02
+	mov dl, '_'
+	int 21h
+
+	cmp	posx, 32
+	jbe	ciclo
+
+	dec si
+	sub posx, 2
+	inc cx
+	jmp	ciclo	
+
+fim_name:
+	goto_xy 40, 19
+	mov			ah,	07h
+	int			21h
+	pop dx
+	pop cx
+	pop bx
+	pop ax
+	ret
+get_player_name endp
 ; :::::::::::::::::: are_you_sure_about_that? ::::::::::::::::::
 are_you_sure_about_that proc
 ciclo:
@@ -2934,6 +3085,44 @@ are_you_sure_about_that endp
 ; :::::::::::::::::: are_you_sure_about_that? ::::::::::::::::::
 
 ; :::::::::::::::::: Game Over ::::::::::::::::::
+bonus_game_over proc
+	; TODO: rest em tudo o que é dados de jogo (para o caso do jogador querer voltar a jogar)
+	; acho que já está feito verificar
+	push ax
+	push dx
+	push bx
+wrong_0:
+	cmp vidas, 0
+	jne fim_game_over
+
+	call	UpdateStats
+	call	clear_screen
+	mov		tam, 0
+; 	lea		dx, GameOverView
+; 	mov		ah, 09h
+; 	int 	21h
+; 	call	get_menu_option
+; 	cmp		al, '1'					; jogador nao quer voltar a jogar
+; 	je		fim_game_over
+; 	cmp		al, '0'					; jogador quer voltar a jogar
+; 	je		restart_game
+	
+; 	call	wrong_input
+; 	jmp		wrong_0
+
+; restart_game:
+	mov		nr_ratos, 0
+	mov		nr_macas, 0
+	mov		pontos, 0
+	;call	menu_controller
+
+fim_game_over:
+	pop bx
+	pop dx
+	pop ax
+	ret
+bonus_game_over endp
+
 game_over proc
 	; TODO: rest em tudo o que é dados de jogo (para o caso do jogador querer voltar a jogar)
 	; acho que já está feito verificar
@@ -2944,29 +3133,29 @@ wrong_0:
 	call	UpdateStats
 	call	clear_screen
 	mov		tam, 0
-	lea		dx, GameOverView
-	mov		ah, 09h
-	int 	21h
-	call	get_menu_option
-	cmp		al, '1'					; jogador nao quer voltar a jogar
-	je		fim_game_over
-	cmp		al, '0'					; jogador quer voltar a jogar
-	je		restart_game
+; 	lea		dx, GameOverView
+; 	mov		ah, 09h
+; 	int 	21h
+; 	call	get_menu_option
+; 	cmp		al, '1'					; jogador nao quer voltar a jogar
+; 	je		fim_game_over
+; 	cmp		al, '0'					; jogador quer voltar a jogar
+; 	je		restart_game
 	
-	call	wrong_input
-	jmp		wrong_0
+; 	call	wrong_input
+; 	jmp		wrong_0
 
-restart_game:
+; restart_game:
 	mov		nr_ratos, 0
 	mov		nr_macas, 0
 	mov		pontos, 0
-	call	menu_controller
+	;call	menu_controller
 
 fim_game_over:
 	pop bx
 	pop dx
 	pop ax
-	jmp	fim
+	ret
 game_over endp
 ; :::::::::::::::::: Game Over ::::::::::::::::::
 
@@ -2977,7 +3166,6 @@ INICIO:
 	MOV			ES,AX			
 	CALL 		clear_screen
 	call		menu_controller
-	; call	bonus_move_snake
 fim:
 	call clear_screen	
 	mov     ah,4ch
