@@ -26,7 +26,7 @@ DADOS	SEGMENT PARA 'DATA'
 	; :::::::::::::::::: Handles ::::::::::::::::::
 		pontos			dw		0
 		str_aux			db		10 dup('$')
-		stats_string	dw		4 dup('$')
+		stats_string	dw		4 dup(0)
 		aux_hist_value	dw		4 dup('$')
 		aux_hist_test	dw 		4 dup('$')
 	; :::::::::::::::::: Handles ::::::::::::::::::
@@ -1013,7 +1013,7 @@ display_average:
 		jmp		display_average
 
 fim_stats:
-		call 	SaveStats
+		; call 	SaveStats
 		call	get_menu_option
 		jmp		stats
 
@@ -1361,28 +1361,25 @@ load_ng:
 		xor 	si, si
 		mov		dx, stats_string[si]
 		mov		nr_games, dx
-	    jmp	    ler_ciclo			; continua a ler o ficheiro
 
 load_bp:
 		inc si
 		inc si
 		mov		dx, stats_string[si]
 		mov		best_play, dx
-	    jmp	    ler_ciclo			; continua a ler o ficheiro
 
 load_wp:
 		inc si
 		inc si
 		mov		dx, stats_string[si]
 		mov		worst_play, dx
-	    jmp	    ler_ciclo			; continua a ler o ficheiro
 
 load_avg:
 		inc si
 		inc si
 		mov		dx, stats_string[si]
 		mov		average_play, dx
-	    jmp	    ler_ciclo			; continua a ler o ficheiro
+		jmp sai
 
 erro_ler:
         mov     ah,09h
@@ -1393,7 +1390,7 @@ fecha_ficheiro:					; vamos fechar o ficheiro
         mov     ah,3eh
         mov     bx,HandleFich
         int     21h
-        jnc     sai
+        jnc     load_ng
 
         mov     ah,09h			; o ficheiro pode não fechar correctamente
         lea     dx,Erro_Close
@@ -1411,6 +1408,18 @@ SaveStats proc
 		push	bx
 		push	cx
 		push 	dx
+
+		mov ax, nr_games
+		mov stats_string[0], ax
+		mov ax, best_play
+		mov stats_string[2], ax		
+		mov ax, worst_play
+		mov stats_string[4], ax		
+		mov ax, average_play
+		mov stats_string[6], ax
+
+
+
 		mov		ah, 3ch				; Abrir o ficheiro para escrita
 		mov		cx, 00H				; Define o tipo de ficheiro 
 		lea		dx, statsFile			; DX aponta para o nome do ficheiro 
@@ -1421,7 +1430,7 @@ SaveStats proc
 		lea		dx, msgErrorCreate
 		int		21h
 	
-		jmp		fim
+		jmp		save_stats_fim
 
 escreve:
 		mov		bx, ax				; Coloca em BX o Handle
@@ -1490,6 +1499,7 @@ fim_update:
 		pop cx
 		pop ax
 		pop bx
+		call SaveStats
 		ret
 UpdateStats endp
 ; :::::::::::::::::: Obter Opção ::::::::::::::::::
@@ -2815,6 +2825,7 @@ INICIO:
 	MOV			AX,0B800H 		
 	MOV			ES,AX			
 	CALL 		clear_screen
+	call		LoadStats
 	call		menu_controller
 fim:
 	call clear_screen	
