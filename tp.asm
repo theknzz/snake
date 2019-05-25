@@ -8,6 +8,7 @@ DADOS	SEGMENT PARA 'DATA'
 	; :::::::::::::::::: Files in Memory ::::::::::::::::::
 		map_editor		db		'./files/map_editor.txt',0
 		statsFile		db		'./files/stats.txt',0
+		history_file	db		'./files/history.txt',0
     ; :::::::::::::::::: Ficheiros em Memória ::::::::::::::::::
 
 	; :::::::::::::::::: File Handles ::::::::::::::::::
@@ -27,6 +28,8 @@ DADOS	SEGMENT PARA 'DATA'
 		vidas 			db		2
 		str_aux			db		10 dup('$')
 		stats_string	dw		4 dup('$')
+		aux_hist_value	dw		4 dup('$')
+		aux_hist_test	dw 		4 dup('$')
 		str_vidas		db		10 dup('$')
 		player_name     db 		5 dup('$')
 	; :::::::::::::::::: Handles ::::::::::::::::::
@@ -297,8 +300,8 @@ DADOS	SEGMENT PARA 'DATA'
 								db 	"               dMP dMP dMP.aMP dMP.aMP dMP.aMP dMP     dMP                   ",13,10
 								db 	"              dMP dMP  VMMMP   VMMMP  dMMMMP  dMMMMMP dMMMMMP                ",13,10
 								db	"                                                                             ",13,10
+								db	"             PONTOS         M.VERDES       M.MADURAS      RATOS              ",13,10
 								db	"                                                                             ",13,10
-								db	"                   > Game History                                            ",13,10
 								db	"                                                                             ",13,10
 								db	"                                                                             ",13,10
 								db 	"                                                                             ",13,10
@@ -504,6 +507,7 @@ DADOS	SEGMENT PARA 'DATA'
 		conta_MV		db		0
 		conta_RD		db		0
 		game_id			db		0
+
 		
 		nr_games		dw		0
 		best_play 		dw 		0
@@ -929,9 +933,7 @@ stats:
 		jmp		stats
 
 game_history:
-		lea		dx, GameHistoryView
-		mov		ah, 09H
-		int		21H
+		call show_history
 		call	get_menu_option
 		jmp		stats
 
@@ -1545,6 +1547,7 @@ maca_verde:
 	mov 	al, difficulty
 	add 	pontos, ax				; adiciona 1*dificuldade pontos
 	call	mostra_pontuacao 	; Mostra prontuação
+	inc conta_MV
 	call 	add_apple
 	inc 	maca
 	dec		nr_macas
@@ -1559,6 +1562,7 @@ maca_madura:
 	mul 	bl					
 	add 	pontos, ax				; adiciona 2*dificuldade pontos
 	call	mostra_pontuacao 	; Mostra prontuação
+	inc conta_MM
 	call 	add_apple
 	inc	 	maca
 	inc	 	maca
@@ -1579,6 +1583,7 @@ rato:
 neg_points:
 	sub pontos, ax
 	call mostra_pontuacao 	; Mostra prontuação
+	inc conta_RD
 	call limpa_maca
 	call come_rato
 
@@ -2348,14 +2353,14 @@ mostra_vidas endp
 
 limpa_aux proc
 	push cx
+	push si
 	mov	cx, 12
-	xor si, si 
-loop1:
+	xor si,si
+limpa_aux_1:
 	mov	str_aux[si], '$'
-	dec	cx
 	inc si
-	loop loop1
-
+	loop limpa_aux_1
+	pop si
 	pop cx
 	ret
 limpa_aux endp
@@ -2388,6 +2393,29 @@ fim_transform:
 	pop		bx
 	ret
 NumbersIntoChars endp
+
+show_str proc
+	push si
+	push ax
+	push cx
+	mov cx, 10
+	mov si, 9
+count_loop:
+	push cx
+	cmp str_aux[si], '$'
+	je dont
+	mov dl, str_aux[si]
+	mov ah, 02H
+	int 21h
+dont:
+	pop cx
+	dec si
+loop count_loop
+	pop cx
+	pop ax
+	pop si
+	ret
+show_str endp
 ; :::::::::::::::::: MACRO Imprime String ::::::::::::::::::
 ; macro para imprimir uma string no stdout
 ; params - recebe a string que vai imprimir
@@ -3129,6 +3157,7 @@ game_over proc
 	push ax
 	push dx
 	push bx
+	call 	historico_jogos
 wrong_0:
 	call	UpdateStats
 	call	clear_screen
@@ -3158,6 +3187,238 @@ fim_game_over:
 	ret
 game_over endp
 ; :::::::::::::::::: Game Over ::::::::::::::::::
+
+historico_jogos proc
+	xor ax,ax
+	xor bx,bx
+	xor dx,dx
+	xor cx,cx
+
+
+
+
+	mov		ah, 3Dh					; Abrir o ficheiro
+	mov 	al, 02h					; Abrir para ler e escrever 
+	lea		dx, history_file		; DX aponta para o nome do ficheiro 
+	int		21h						; Abre efectivamente o ficheiro (AX fica com o Handle do ficheiro)
+	jc		erro_fich				; Se não existir erro escreve no ficheiro
+	mov bx,ax
+
+
+
+
+; append:
+; 	xor dx,dx
+; 	xor cx,cx
+; 	mov ah, 42h
+; 	mov al, 02h
+; 	int 21H
+; 	jc		erro_fich
+	xor ax,ax
+	xor si,si
+	xor cx,cx
+	xor dx,dx
+	mov ax, pontos
+	mov aux_hist_value[0], ax
+	mov ax, conta_MV
+	mov aux_hist_value[2], ax
+	mov ax, conta_MM
+	mov aux_hist_value[4], ax
+	mov ax, conta_RD
+	mov aux_hist_value[6], ax
+ 
+order_cycle:
+	mov ah, 3fh
+	lea dx, aux_hist_test
+	mov cx, 8
+	int 21H	
+	jc		erro_fich
+	cmp ax, 0
+	je empty
+	mov ax, aux_hist_test[0]
+	cmp ax, pontos
+	jae test_next
+	jmp write_curr
+
+test_next:
+; 	mov ah, 42h
+; 	mov al, 01h
+; 	xor cx,cx
+; 	mov dx, 8
+; 	int 21h
+	jmp order_cycle
+
+write_curr:
+	mov ah, 42h
+	mov al, 01h
+	mov cx, -1
+	mov dx, -8
+	int 21h
+	mov ah, 40h
+	lea dx, aux_hist_value
+	mov cx, 8
+	int 21H	
+	jc		erro_fich
+	mov ax, aux_hist_test[0]
+	mov aux_hist_value[0], ax
+	mov ax, aux_hist_test[2]
+	mov aux_hist_value[2], ax
+	mov ax, aux_hist_test[4]
+	mov aux_hist_value[4], ax
+	mov ax, aux_hist_test[6]
+	mov aux_hist_value[6], ax
+rewrite_rest:
+	mov ah, 3fh
+	lea dx, aux_hist_test
+	mov cx, 8
+	int 21H	
+	jc		erro_fich
+	cmp ax, 0
+	je empty
+	mov ah, 42h
+	mov al, 01h
+	mov cx, -1
+	mov dx, -8
+	int 21h
+	mov ah, 40h
+	lea dx, aux_hist_value
+	mov cx, 8
+	int 21H	
+	jc		erro_fich
+	mov ax, aux_hist_test[0]
+	mov aux_hist_value[0], ax
+	mov ax, aux_hist_test[2]
+	mov aux_hist_value[2], ax
+	mov ax, aux_hist_test[4]
+	mov aux_hist_value[4], ax
+	mov ax, aux_hist_test[6]
+	mov aux_hist_value[6], ax
+
+	jmp rewrite_rest
+
+empty:
+
+	mov ah, 40h
+	lea dx, aux_hist_value
+	mov cx, 8
+	int 21H
+
+
+close:
+	mov		ah,3eh				; fecha o ficheiro
+	int		21h
+	ret
+
+erro_fich:
+	mov		ah, 09h
+	lea		dx, msgErrorWrite
+	int		21h
+	ret
+
+erro_close_fich:
+	mov		ah, 09h
+	lea		dx, msgErrorClose
+	int		21h	
+	ret
+
+erro_abrir_fich:
+	mov		ah, 09h
+	lea		dx, msgErrorCreate
+	int		21h
+	ret
+	
+historico_jogos	endp
+
+
+show_history proc
+	mov ah, 3Dh
+	mov al, 00h
+	lea dx, history_file
+	int 21H
+	jc erro_open_hist
+	mov bx,ax
+show_cycle:
+	lea		dx, GameHistoryView
+	mov		ah, 09H
+	int		21H
+	mov 	posy, 16
+page_cycle:
+	mov 	posx, 13
+	mov ah, 3Fh 
+	lea dx, aux_hist_value
+	mov cx, 8
+	int 21H
+	jc erro_read_hist
+	cmp ax, 0
+	je close_hist
+	mov tam,0
+	xor si,si
+show_single_loop:
+	call limpa_aux
+	mov ax, aux_hist_value[si]
+	push si
+	call NumbersIntoChars
+	pop si
+	goto_xy posx,posy
+	call show_str
+					push ax
+		mov ax, 0be30h
+		add ax, si
+mov es:[0], ax
+pop ax
+
+		add posx, 15
+			add si, 2
+	cmp si, 8
+	jb show_single_loop
+
+	inc posy
+	inc tam
+	cmp tam, 8
+	jb page_cycle
+page_wait:
+	mov ah, 0Bh
+	int 21h
+	cmp al,0
+	je page_wait
+	jmp show_cycle
+
+close_hist:
+	mov		ah,3eh				; fecha o ficheiro
+	int		21h
+	ret
+
+erro_read_hist:
+	mov		ah, 09h
+	lea		dx, Erro_Ler_Msg 
+	int		21h	
+	ret
+
+erro_open_hist:
+	mov		ah, 09h
+	lea		dx, Erro_Open
+	int		21h	
+	ret
+
+erro_close_hist:
+	mov		ah, 09h
+	lea		dx, msgErrorClose
+	int		21h	
+	ret
+
+show_history endp
+
+test_shit PROC
+start_shit:
+	goto_xy		21, 20			; Vai para posição do cursor
+	mov			ah,	07h
+	int			21h
+	cmp			al, 1Bh			; ESC - Fast Ending
+	jne			start_shit
+	ret
+
+test_shit endp
+
 
 INICIO:
 	mov     	ax, DADOS
