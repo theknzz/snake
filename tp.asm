@@ -503,9 +503,9 @@ DADOS	SEGMENT PARA 'DATA'
 		hare_label		db		"HARE$"
 		cheetah_label	db		"CHEETAH$"
 
-		conta_MM		db		0
-		conta_MV		db		0
-		conta_RD		db		0
+		conta_MM		dw		0
+		conta_MV		dw		0
+		conta_RD		dw		0
 		game_id			db		0
 
 		
@@ -1518,7 +1518,7 @@ get_menu_option PROC
 
 close:
 	call		clear_screen
-	jmp			fim
+	jmp fim
 
 get_menu_option endp
 
@@ -3151,6 +3151,9 @@ wrong_0:
 	mov		nr_ratos, 0
 	mov		nr_macas, 0
 	mov		pontos, 0
+	mov 	conta_MV, 0
+	mov 	conta_MM, 0
+	mov 	conta_RD, 0
 	;call	menu_controller
 
 fim_game_over:
@@ -3187,6 +3190,9 @@ wrong_0:
 	mov		nr_ratos, 0
 	mov		nr_macas, 0
 	mov		pontos, 0
+	mov 	conta_MV, 0
+	mov 	conta_MM, 0
+	mov 	conta_RD, 0
 	;call	menu_controller
 
 fim_game_over:
@@ -3347,6 +3353,8 @@ show_history proc
 	jc erro_open_hist
 	mov bx,ax
 show_cycle:
+	call clear_screen
+	mov tam,0
 	lea		dx, GameHistoryView
 	mov		ah, 09H
 	int		21H
@@ -3360,7 +3368,6 @@ page_cycle:
 	jc erro_read_hist
 	cmp ax, 0
 	je close_hist
-	mov tam,0
 	xor si,si
 show_single_loop:
 	call limpa_aux
@@ -3370,14 +3377,8 @@ show_single_loop:
 	pop si
 	goto_xy posx,posy
 	call show_str
-					push ax
-		mov ax, 0be30h
-		add ax, si
-mov es:[0], ax
-pop ax
-
-		add posx, 15
-			add si, 2
+	add posx, 15
+	add si, 2
 	cmp si, 8
 	jb show_single_loop
 
@@ -3386,9 +3387,8 @@ pop ax
 	cmp tam, 8
 	jb page_cycle
 page_wait:
-	mov ah, 0Bh
-	int 21h
-	cmp al,0
+	call get_menu_option
+	cmp al, 0
 	je page_wait
 	jmp show_cycle
 
