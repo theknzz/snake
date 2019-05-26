@@ -27,7 +27,7 @@ DADOS	SEGMENT PARA 'DATA'
 		pontos			dw		0
 		vidas 			db		2
 		str_aux			db		10 dup('$')
-		stats_string	dw		4 dup('$')
+		stats_string	dw		4 dup(0)
 		aux_hist_value	dw		4 dup('$')
 		aux_hist_test	dw 		4 dup('$')
 		str_vidas		db		10 dup('$')
@@ -503,9 +503,9 @@ DADOS	SEGMENT PARA 'DATA'
 		hare_label		db		"HARE$"
 		cheetah_label	db		"CHEETAH$"
 
-		conta_MM		db		0
-		conta_MV		db		0
-		conta_RD		db		0
+		conta_MM		dw		0
+		conta_MV		dw		0
+		conta_RD		dw		0
 		game_id			db		0
 
 		
@@ -1040,7 +1040,7 @@ display_average:
 		jmp		display_average
 
 fim_stats:
-		call 	SaveStats
+		; call 	SaveStats
 		call	get_menu_option
 		jmp		stats
 
@@ -1366,28 +1366,25 @@ load_ng:
 		xor 	si, si
 		mov		dx, stats_string[si]
 		mov		nr_games, dx
-	    jmp	    ler_ciclo			; continua a ler o ficheiro
 
 load_bp:
 		inc si
 		inc si
 		mov		dx, stats_string[si]
 		mov		best_play, dx
-	    jmp	    ler_ciclo			; continua a ler o ficheiro
 
 load_wp:
 		inc si
 		inc si
 		mov		dx, stats_string[si]
 		mov		worst_play, dx
-	    jmp	    ler_ciclo			; continua a ler o ficheiro
 
 load_avg:
 		inc si
 		inc si
 		mov		dx, stats_string[si]
 		mov		average_play, dx
-	    jmp	    ler_ciclo			; continua a ler o ficheiro
+		jmp sai
 
 erro_ler:
         mov     ah,09h
@@ -1398,7 +1395,7 @@ fecha_ficheiro:					; vamos fechar o ficheiro
         mov     ah,3eh
         mov     bx,HandleFich
         int     21h
-        jnc     sai
+        jnc     load_ng
 
         mov     ah,09h			; o ficheiro pode não fechar correctamente
         lea     dx,Erro_Close
@@ -1416,9 +1413,20 @@ SaveStats proc
 		push	bx
 		push	cx
 		push 	dx
-		mov		ah, 3dh				; Abrir o ficheiro para escrita
-		mov		al, 1				; abrir o ficheiro para escrever
-		;mov		cx, 00H				; Define o tipo de ficheiro 
+
+		mov ax, nr_games
+		mov stats_string[0], ax
+		mov ax, best_play
+		mov stats_string[2], ax		
+		mov ax, worst_play
+		mov stats_string[4], ax		
+		mov ax, average_play
+		mov stats_string[6], ax
+
+
+
+		mov		ah, 3ch				; Abrir o ficheiro para escrita
+		mov		cx, 00H				; Define o tipo de ficheiro 
 		lea		dx, statsFile			; DX aponta para o nome do ficheiro 
 		int		21h				; Abre efectivamente o ficheiro (AX fica com o Handle do ficheiro)
 		jnc		escreve				; Se não existir erro escreve no ficheiro
@@ -1427,7 +1435,7 @@ SaveStats proc
 		lea		dx, msgErrorCreate
 		int		21h
 	
-		jmp		fim
+		jmp		save_stats_fim
 
 escreve:
 		mov		bx, ax				; Coloca em BX o Handle
@@ -1496,6 +1504,7 @@ fim_update:
 		pop cx
 		pop ax
 		pop bx
+		call SaveStats
 		ret
 UpdateStats endp
 ; :::::::::::::::::: Obter Opção ::::::::::::::::::
@@ -1509,7 +1518,7 @@ get_menu_option PROC
 
 close:
 	call		clear_screen
-	jmp			fim
+	jmp fim
 
 get_menu_option endp
 
@@ -3142,6 +3151,9 @@ wrong_0:
 	mov		nr_ratos, 0
 	mov		nr_macas, 0
 	mov		pontos, 0
+	mov 	conta_MV, 0
+	mov 	conta_MM, 0
+	mov 	conta_RD, 0
 	;call	menu_controller
 
 fim_game_over:
@@ -3178,6 +3190,9 @@ wrong_0:
 	mov		nr_ratos, 0
 	mov		nr_macas, 0
 	mov		pontos, 0
+	mov 	conta_MV, 0
+	mov 	conta_MM, 0
+	mov 	conta_RD, 0
 	;call	menu_controller
 
 fim_game_over:
@@ -3338,6 +3353,8 @@ show_history proc
 	jc erro_open_hist
 	mov bx,ax
 show_cycle:
+	call clear_screen
+	mov tam,0
 	lea		dx, GameHistoryView
 	mov		ah, 09H
 	int		21H
@@ -3351,7 +3368,6 @@ page_cycle:
 	jc erro_read_hist
 	cmp ax, 0
 	je close_hist
-	mov tam,0
 	xor si,si
 show_single_loop:
 	call limpa_aux
@@ -3361,14 +3377,8 @@ show_single_loop:
 	pop si
 	goto_xy posx,posy
 	call show_str
-					push ax
-		mov ax, 0be30h
-		add ax, si
-mov es:[0], ax
-pop ax
-
-		add posx, 15
-			add si, 2
+	add posx, 15
+	add si, 2
 	cmp si, 8
 	jb show_single_loop
 
@@ -3377,9 +3387,8 @@ pop ax
 	cmp tam, 8
 	jb page_cycle
 page_wait:
-	mov ah, 0Bh
-	int 21h
-	cmp al,0
+	call get_menu_option
+	cmp al, 0
 	je page_wait
 	jmp show_cycle
 
@@ -3426,6 +3435,7 @@ INICIO:
 	MOV			AX,0B800H 		
 	MOV			ES,AX			
 	CALL 		clear_screen
+	call		LoadStats
 	call		menu_controller
 fim:
 	call clear_screen	
