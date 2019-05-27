@@ -938,6 +938,7 @@ game_history:
 		jmp		stats
 
 game_stats:
+
 		call	LoadStats
 		xor		bx, bx
 		lea		dx, StatsView
@@ -1328,22 +1329,21 @@ fim_save:
 SaveBonusMap endp
 
 LoadStats proc
-; TODO: mudar a interrupção para nao criar o ficheiro mas abrir
-		push ax
-		push bx
-		push cx
-		push dx
+		push ax						; mandar o registo ax para a pilha para preservar o seu valor						
+		push bx						; mandar o registo bx para a pilha para preservar o seu valor
+		push cx						; mandar o registo cx para a pilha para preservar o seu valor
+		push dx						; mandar o registo dx para a pilha para preservar o seu valor			
 		xor si, si
-		lea		dx, statsFile
-        mov     ah,3dh				; vamos abrir ficheiro para leitura 
-        mov     al,0				; tipo de ficheiro
-        int     21h					; abre para leitura 
+		lea		dx, statsFile		; colocar o src do ficheiro em dx
+        mov     ah,3dh				
+        mov     al,0				; vamos abrir ficheiro para leitura 
+        int     21h					
         jc      erro_abrir			; pode aconter erro a abrir o ficheiro 
         mov     HandleFich,ax		; ax devolve o Handle para o ficheiro 
         jmp     ler_ciclo			; depois de abero vamos ler o ficheiro 
 
 erro_abrir:
-        mov     ah,09h
+        mov     ah,09h				; interrupcao para imprimir string no stdout
         lea     dx,Erro_Open
         int     21h
         jmp     sai
@@ -1352,11 +1352,12 @@ ler_ciclo:
         mov     ah,3fh				; indica que vai ser lido um ficheiro 
         mov     bx,HandleFich		; bx deve conter o Handle do ficheiro previamente aberto 
         mov     cx,2				; numero de bytes a ler
-        lea     dx,w_caracter			; vai ler para o local de memoria apontado por dx (car_fich)
+        lea     dx,w_caracter			; vai ler para o local de memoria apontado por dx
         int     21h					; faz efectivamente a leitura
 	    jc	    erro_ler			; se carry é porque aconteceu um erro
 		cmp		ax, 0
 	    je	    fecha_ficheiro		; se EOF fecha o ficheiro
+
 		mov		dx, w_caracter
 		mov		stats_string[si], dx
 		add		si, 2
@@ -1366,29 +1367,29 @@ load_ng:
 		xor 	si, si
 		mov		dx, stats_string[si]
 		mov		nr_games, dx
-	    jmp	    ler_ciclo			; continua a ler o ficheiro
+	    ;jmp	    ler_ciclo			; continua a ler o ficheiro
 
 load_bp:
 		inc si
 		inc si
 		mov		dx, stats_string[si]
 		mov		best_play, dx
-	    jmp	    ler_ciclo			; continua a ler o ficheiro
+	    ;jmp	    ler_ciclo			; continua a ler o ficheiro
 
 load_wp:
 		inc si
 		inc si
 		mov		dx, stats_string[si]
 		mov		worst_play, dx
-	    jmp	    ler_ciclo			; continua a ler o ficheiro
+	    ;jmp	    ler_ciclo			; continua a ler o ficheiro
 
 load_avg:
 		inc si
 		inc si
 		mov		dx, stats_string[si]
 		mov		average_play, dx
-	    jmp	    ler_ciclo			; continua a ler o ficheiro
-
+	    ;jmp	    ler_ciclo			; continua a ler o ficheiro
+		jmp fecha_ficheiro
 erro_ler:
         mov     ah,09h
         lea     dx,Erro_Ler_Msg
@@ -1416,9 +1417,8 @@ SaveStats proc
 		push	bx
 		push	cx
 		push 	dx
-		mov		ah, 3dh				; Abrir o ficheiro para escrita
-		mov		al, 1				; abrir o ficheiro para escrever
-		;mov		cx, 00H				; Define o tipo de ficheiro 
+		mov		ah, 3ch				; Abrir o ficheiro para escrita
+		mov		cx, 00H				; Define o tipo de ficheiro 
 		lea		dx, statsFile			; DX aponta para o nome do ficheiro 
 		int		21h				; Abre efectivamente o ficheiro (AX fica com o Handle do ficheiro)
 		jnc		escreve				; Se não existir erro escreve no ficheiro
@@ -1568,7 +1568,7 @@ maca_madura:
 	inc	 	maca
 	dec		nr_macas
 	call 	limpa_maca
-	dec	nr_macas
+	dec		nr_macas
 	jmp 	cont_ciclo
 
 rato:
@@ -2262,6 +2262,7 @@ come_rato endp
 
 ; :::::::::::::::::: Mostra Pontuação ::::::::::::::::::
 mostra_pontuacao proc 
+	call limpa_aux
 	push	ax
 	push	bx
 	push	cx
@@ -2297,8 +2298,14 @@ display_pont:
 	jmp		display_pont
 
 fim_mostra:
+	; mov	ah, 09H
+	; lea dx, points_str
+	; int	21h
+	mov ah, 02H
+	mov dl, ' '
+	int 21h
 	goto_xy	posx, posy
-	call 	limpa_aux
+	;call 	limpa_aux
 	pop		dx
 	pop		cx
 	pop		bx
@@ -2330,7 +2337,7 @@ break_chars:
 	jmp		break_chars
 	
 display:
-	goto_xy	72, 3
+	goto_xy	73, 3
 display_pont:
 	xor		dl, dl
 	mov		ah, 02h
@@ -2354,7 +2361,7 @@ mostra_vidas endp
 limpa_aux proc
 	push cx
 	push si
-	mov	cx, 12
+	mov	cx, 10
 	xor si,si
 limpa_aux_1:
 	mov	str_aux[si], '$'
@@ -2366,31 +2373,32 @@ limpa_aux_1:
 limpa_aux endp
 
 ; recebe nr. para converter em ax
+; devolve em str_aux os nr's convertidos em chars
 NumbersIntoChars proc
-	push	bx
-	push	cx
-	push	dx
-	xor		si, si
+	push	bx					; mandar o registo bx para a pilha para preservar o seu valor
+	push	cx					; mandar o registo cx para a pilha para preservar o seu valor
+	push	dx					; mandar o registo dx para a pilha para preservar o seu valor
+	xor		si, si				
 	xor		dx, dx
 	xor		bx, bx
 	mov		cx, cx
-	mov		bx, 10
+	mov		bx, 10				; para separar os caracteres do nr.
 
 break_chars_0:
 	xor		dx, dx
 	div		bx					; ah fica com o caracter a converter para ascii
 	add		dl, 30h				; para converter para ascii
-	mov		str_aux[si], dl
-	cmp		ax, 0
-	je		fim_transform
-	inc		si
-	jmp		break_chars_0
+	mov		str_aux[si], dl		; colocar no vetor
+	cmp		ax, 0				; se o o dividendo for 0
+	je		fim_transform		; entao cheguei ao fim
+	inc		si					; incremenetar o si, para ir para a proxima posição do vetor
+	jmp		break_chars_0		; repetir o algoritmo até chegar à condicação de paragem
 
 fim_transform:
 	;call 	limpa_aux
-	pop		dx
-	pop		cx
-	pop		bx
+	pop		dx					; atualizar o registo
+	pop		cx					; atualizar o registo
+	pop		bx					; atualizar o registo
 	ret
 NumbersIntoChars endp
 
@@ -3220,11 +3228,11 @@ historico_jogos proc
 	xor dx,dx
 	mov ax, pontos
 	mov aux_hist_value[0], ax
-	mov ax, conta_MV
+	mov al, conta_MV
 	mov aux_hist_value[2], ax
-	mov ax, conta_MM
+	mov al, conta_MM
 	mov aux_hist_value[4], ax
-	mov ax, conta_RD
+	mov al, conta_RD
 	mov aux_hist_value[6], ax
  
 order_cycle:
@@ -3428,7 +3436,7 @@ INICIO:
 	CALL 		clear_screen
 	call		menu_controller
 fim:
-	call clear_screen	
+	;call clear_screen	
 	mov     ah,4ch
 	int     21h
 
