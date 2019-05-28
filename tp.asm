@@ -3436,7 +3436,7 @@ INICIO:
 	CALL 		clear_screen
 	call		menu_controller
 fim:
-	;call clear_screen	
+	call clear_screen	
 	mov     ah,4ch
 	int     21h
 
