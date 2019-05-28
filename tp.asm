@@ -28,8 +28,8 @@ DADOS	SEGMENT PARA 'DATA'
 		vidas 			db		2
 		str_aux			db		10 dup('$')
 		stats_string	dw		4 dup(0)
-		aux_hist_value	dw		4 dup('$')
-		aux_hist_test	dw 		4 dup('$')
+		aux_hist_value	dw		6 dup('$')
+		aux_hist_test	dw 		6 dup('$')
 		str_vidas		db		10 dup('$')
 		player_name     db 		5 dup('$')
 	; :::::::::::::::::: Handles ::::::::::::::::::
@@ -300,7 +300,7 @@ DADOS	SEGMENT PARA 'DATA'
 								db 	"               dMP dMP dMP.aMP dMP.aMP dMP.aMP dMP     dMP                   ",13,10
 								db 	"              dMP dMP  VMMMP   VMMMP  dMMMMP  dMMMMMP dMMMMMP                ",13,10
 								db	"                                                                             ",13,10
-								db	"             PONTOS         M.VERDES       M.MADURAS      RATOS              ",13,10
+								db	"         NOME          PONTOS        M.VERDES      M.MADURAS     RATOS       ",13,10
 								db	"                                                                             ",13,10
 								db	"                                                                             ",13,10
 								db	"                                                                             ",13,10
@@ -2928,7 +2928,6 @@ continue_setup:
 	xor		ax, ax
 	call	mostra_pontuacao
 	call 	move_snake
-	call	regista_nome
 	; cmp		al, 1Bh		; considerando que sempre o jogo acaba o jogador perdeu
 	; call	are_you_sure_about_that
 	; call	game_over		; podemos validar o ESC para perguntar se quer mesmo sair
@@ -3082,7 +3081,7 @@ to_caps:
 	jmp tb
 
 add_char:
-	mov player_name[si], dl
+	mov player_name[si], al
 	add posx, 2
 	inc si
 	loop ciclo
@@ -3180,8 +3179,9 @@ game_over proc
 	push ax
 	push dx
 	push bx
-	call 	historico_jogos
 wrong_0:
+	call	regista_nome
+	call 	historico_jogos
 	call	UpdateStats
 	call	clear_screen
 	mov		tam, 0
@@ -3252,11 +3252,17 @@ historico_jogos proc
 	mov aux_hist_value[4], ax
 	mov ax, conta_RD
 	mov aux_hist_value[6], ax
+	mov ah, player_name[1]
+	mov al, player_name[0]
+	mov aux_hist_value[8], ax
+	mov ah, player_name[3]
+	mov al, player_name[2]
+	mov aux_hist_value[10], ax
  
 order_cycle:
 	mov ah, 3fh
 	lea dx, aux_hist_test
-	mov cx, 8
+	mov cx, 12
 	int 21H	
 	jc		erro_fich
 	cmp ax, 0
@@ -3278,11 +3284,11 @@ write_curr:
 	mov ah, 42h
 	mov al, 01h
 	mov cx, -1
-	mov dx, -8
+	mov dx, -12
 	int 21h
 	mov ah, 40h
 	lea dx, aux_hist_value
-	mov cx, 8
+	mov cx, 12
 	int 21H	
 	jc		erro_fich
 	mov ax, aux_hist_test[0]
@@ -3293,10 +3299,15 @@ write_curr:
 	mov aux_hist_value[4], ax
 	mov ax, aux_hist_test[6]
 	mov aux_hist_value[6], ax
+	mov ax, aux_hist_test[8]
+	mov aux_hist_value[8], ax
+	mov ax, aux_hist_test[10]
+	mov aux_hist_value[10], ax
+	
 rewrite_rest:
 	mov ah, 3fh
 	lea dx, aux_hist_test
-	mov cx, 8
+	mov cx, 12
 	int 21H	
 	jc		erro_fich
 	cmp ax, 0
@@ -3304,11 +3315,11 @@ rewrite_rest:
 	mov ah, 42h
 	mov al, 01h
 	mov cx, -1
-	mov dx, -8
+	mov dx, -12
 	int 21h
 	mov ah, 40h
 	lea dx, aux_hist_value
-	mov cx, 8
+	mov cx, 12
 	int 21H	
 	jc		erro_fich
 	mov ax, aux_hist_test[0]
@@ -3319,6 +3330,10 @@ rewrite_rest:
 	mov aux_hist_value[4], ax
 	mov ax, aux_hist_test[6]
 	mov aux_hist_value[6], ax
+	mov ax, aux_hist_test[8]
+	mov aux_hist_value[8], ax
+	mov ax, aux_hist_test[10]
+	mov aux_hist_value[10], ax
 
 	jmp rewrite_rest
 
@@ -3326,7 +3341,7 @@ empty:
 
 	mov ah, 40h
 	lea dx, aux_hist_value
-	mov cx, 8
+	mov cx, 12
 	int 21H
 
 
@@ -3371,10 +3386,10 @@ show_cycle:
 	int		21H
 	mov 	posy, 16
 page_cycle:
-	mov 	posx, 13
+	mov 	posx, 23
 	mov ah, 3Fh 
 	lea dx, aux_hist_value
-	mov cx, 8
+	mov cx, 12
 	int 21H
 	jc erro_read_hist
 	cmp ax, 0
@@ -3388,11 +3403,19 @@ show_single_loop:
 	pop si
 	goto_xy posx,posy
 	call show_str
-	add posx, 15
+	add posx, 14
 	add si, 2
 	cmp si, 8
 	jb show_single_loop
-
+	mov posx, 9
+	goto_xy posx, posy
+	mov cx, 4
+write_name:
+	mov dx, aux_hist_value[si]
+	mov ah, 02H
+	int 21h
+	inc si
+	loop write_name
 	inc posy
 	inc tam
 	cmp tam, 8
