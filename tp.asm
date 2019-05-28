@@ -3246,11 +3246,11 @@ historico_jogos proc
 	xor dx,dx
 	mov ax, pontos
 	mov aux_hist_value[0], ax
-	mov al, conta_MV
+	mov ax, conta_MV
 	mov aux_hist_value[2], ax
-	mov al, conta_MM
+	mov ax, conta_MM
 	mov aux_hist_value[4], ax
-	mov al, conta_RD
+	mov ax, conta_RD
 	mov aux_hist_value[6], ax
 	mov ah, player_name[1]
 	mov al, player_name[0]
@@ -3472,7 +3472,7 @@ INICIO:
 	call		LoadStats
 	call		menu_controller
 fim:
-	;call clear_screen	
+	call clear_screen	
 	mov     ah,4ch
 	int     21h
 
