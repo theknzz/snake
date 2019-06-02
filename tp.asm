@@ -39,8 +39,8 @@ DADOS	SEGMENT PARA 'DATA'
 	; :::::::::::::::::: Warnings ::::::::::::::::::
 
 	; :::::::::::::::::: Cobra Utils ::::::::::::::::::
-		tam				db 		0	; tamanho da cobra, menos 1 (facilita o uso do vetor)
-		snake_dir		db		620 dup(?) ; vetor de direçoes para cada "peça" da cobra
+		tam				db 		0				; tamanho da cobra, menos 1 (facilita o uso do vetor)
+		snake_dir		db		620 dup(?) 		; vetor de direçoes para cada "peça" da cobra
 		head_x			db		?
 		head_y			db		?	
 		tail_x 			db		?
@@ -514,7 +514,7 @@ DADOS	SEGMENT PARA 'DATA'
 		worst_play		dw		0
 		average_play	dw		0
 
-		difficulty		db		? 	; (?) Multiplier para pontuação
+		difficulty		db		? 	; Multiplier para pontuação
 		conta_maca		db		0
 
 		nr_macas		db		0	
@@ -649,7 +649,6 @@ clear_screen	ENDP
 ; Se não foi premida tecla, devolve ah=0 e al = 0
 ;********************************************************************************
 LE_TECLA_0	PROC
-	;	call 	Trata_Horas
 		MOV		AH,0BH
 		INT 	21h
 		cmp 	AL,0
@@ -965,12 +964,6 @@ display_nrgames:
 		jmp		display_nrgames
 
 bp_1:
-		; mov stats_string[bx], 13
-		; inc		bx
-		; inc	bx
-		; mov stats_string[bx], 10
-		; inc		bx
-		; inc		bx
 		inc bx
 		goto_xy	31, 18
 		mov	ax, best_play
@@ -991,12 +984,6 @@ display_bp:
 		jmp		display_bp
 
 wp_1:
-		; mov stats_string[bx], 13
-		; inc		bx
-		; inc	bx
-		; mov stats_string[bx], 10
-		; inc		bx
-		; inc bx
 		goto_xy	32, 19
 		mov		ax, worst_play
 		call	NumbersIntoChars
@@ -1015,13 +1002,7 @@ display_wp:
 		dec		si
 		jmp		display_wp
 		
-avg_1:		
-		; mov stats_string[bx], 13
-		; inc		bx
-		; inc	bx
-		; mov stats_string[bx], 10
-		; inc		bx
-		; inc bx
+avg_1:
 		goto_xy	34, 20
 		mov		ax, average_play
 		call	NumbersIntoChars
@@ -1041,7 +1022,6 @@ display_average:
 		jmp		display_average
 
 fim_stats:
-		; call 	SaveStats
 		call	get_menu_option
 		jmp		stats
 
@@ -1289,7 +1269,6 @@ push	cx
 push	dx
 		mov		ah, 3ch				; Abrir o ficheiro para escrita
 		mov		cx, 00H				; Define o tipo de ficheiro 
-		;lea		dx, fname			; DX aponta para o nome do ficheiro 
 		int		21h				; Abre efectivamente o ficheiro (AX fica com o Handle do ficheiro)
 		jnc		escreve				; Se não existir erro escreve no ficheiro
 	
@@ -1620,19 +1599,8 @@ cont_ciclo:
 		mov		al, ' '
 		mov		ah, 0fh
 		mov		es:[si][bx], ax
-		mov		es:[si][bx+2], ax
+		mov		es:[si][bx+2], AX
 
-
-		; mov			ah, 02h
-		; mov			dl, ' ' 		; Coloca ESPAÇO
-		; int			21H
-		; mov 		ah, tail_x
-		; mov 		posxa, ah
-		; inc			POSxa
-		; goto_xy		POSxa,tail_y	
-		; mov			ah, 02h
-		; mov			dl, ' '			;  Coloca ESPAÇO
-		; int			21H	
 		call 		move_tail
 
 
@@ -1640,17 +1608,12 @@ cont_ciclo:
 IMPRIME:
 	;; Atualizar a cabeça da cobra
 		goto_xy		head_x,head_y		; Vai para posição do cursor
-		;call		verifica_rato
 		mov 		ah, 08h				; Guarda o Caracter que está na posição do Cursor
 		mov			bh,0				; numero da página
 		int			10h
 
 		cmp 		al, '('				;  se houver cobra na posição atual, game over
 		je			fim_jogo
-
-		; mov			ah, 02h
-		; mov			dl, '('				; Coloca AVATAR1
-		; int			21H
 
 		mov		al, head_y
 		mov		bx, 160
@@ -1672,20 +1635,12 @@ IMPRIME:
 		mov bx,ax
 		xor ax, ax
 		mov		al, '('
-		mov		ah, 66h;22h
+		mov		ah, 66h
 		mov		es:[si][bx], ax
 
 
 		mov		al, ')'
 		mov		es:[si][bx+2], ax
-
-		; mov 		ah, head_x
-		; mov 		posx, ah
-		; inc			POSx
-		; goto_xy		posx,head_y		
-		; mov			ah, 02h
-		; mov			dl, ')'			; Coloca AVATAR2
-		; int			21H	
 
 		goto_xy		head_x, head_y		; Vai para posição do cursor
 		cmp			nr_macas, 0
@@ -1704,7 +1659,6 @@ LER_SETA:
 		CMP 		AL, 27			; ESCAPE
 		jne			TESTE_END
 		jmp			fim
-		; call		are_you_sure_about_that
 TESTE_END:		
 		CALL		PASSA_TEMPO
 		mov			AX, PASSA_T_ant
@@ -1810,29 +1764,21 @@ ctn_03:
 
 tp_dir1:
 	mov	bl, direccao
-	; cmp	bl, 2     ; se a direcao da cabeca for para a esquerdar
-	; jne	ctn_01
 	mov	bh, 64
 	mov	tail_x, bh
 	jmp ctn_01
 tp_esq1:
 	mov bl, direccao
-	; cmp bl, 0	; se a direcao da cabeca for para a direita
-	; jne ctn_02
 	mov	bh, 4
 	mov	tail_x, bh
 	jmp ctn_02
 tp_bx1:
 	mov bl, direccao
-	; cmp bl, 1  ; se a direcao da cabeca for para cima
-	; jne ctn_03
 	mov bh, 21
 	mov	tail_y, bh
 	jmp ctn_03
 tp_cm1:
 	mov bl, direccao
-	; cmp bl, 3		; se a direcao da cabeca for para baixo
-	; jne avalia_tail
 	mov bh, 2
 	mov tail_y, bh
 
@@ -1895,7 +1841,6 @@ CICLO:
 	call		mostra_vidas
 	call		add_ratos
 	call 		dir_vector
-	;goto_xy		head_x,head_y		; Vai para nova posição
 	
 	call tp_snake
 
@@ -1978,17 +1923,6 @@ cont_ciclo:
 		mov		es:[si][bx], ax
 		mov		es:[si][bx+2], ax
 
-
-		; mov			ah, 02h
-		; mov			dl, ' ' 		; Coloca ESPAÇO
-		; int			21H
-		; mov 		ah, tail_x
-		; mov 		posxa, ah
-		; inc			POSxa
-		; goto_xy		POSxa,tail_y	
-		; mov			ah, 02h
-		; mov			dl, ' '			;  Coloca ESPAÇO
-		; int			21H	
 		call 		move_tail
 
 
@@ -1996,17 +1930,12 @@ cont_ciclo:
 IMPRIME:
 	;; Atualizar a cabeça da cobra
 		goto_xy		head_x,head_y		; Vai para posição do cursor
-		;call		verifica_rato
 		mov 		ah, 08h				; Guarda o Caracter que está na posição do Cursor
 		mov			bh,0				; numero da página
 		int			10h
 
 		cmp 		al, '('				;  se houver cobra na posição atual, game over
 		je			fim_jogo
-
-		; mov			ah, 02h
-		; mov			dl, '('				; Coloca AVATAR1
-		; int			21H
 
 		mov		al, head_y
 		mov		bx, 160
@@ -2028,20 +1957,12 @@ IMPRIME:
 		mov bx,ax
 		xor ax, ax
 		mov		al, '('
-		mov		ah, 66h;22h
+		mov		ah, 66h
 		mov		es:[si][bx], ax
 
 
 		mov		al, ')'
 		mov		es:[si][bx+2], ax
-
-		; mov 		ah, head_x
-		; mov 		posx, ah
-		; inc			POSx
-		; goto_xy		posx,head_y		
-		; mov			ah, 02h
-		; mov			dl, ')'			; Coloca AVATAR2
-		; int			21H	
 
 		goto_xy		head_x, head_y		; Vai para posição do cursor
 		cmp			nr_macas, 0
@@ -2060,7 +1981,6 @@ LER_SETA:
 		CMP 		AL, 27			; ESCAPE
 		jne			TESTE_END
 		jmp			fim
-		; call		are_you_sure_about_that
 TESTE_END:		
 		CALL		PASSA_TEMPO
 		mov			AX, PASSA_T_ant
@@ -2235,16 +2155,6 @@ ciclo_rato:
 	pop bx
 	pop ax
 
-	; mov ah, tail_x
-	; mov posx, ah
-	; goto_xy tail_x, tail_y
-	; mov dl,' '
-	; mov ah,02h
-	; int 21h
-	; inc posx
-	; goto_xy posx, tail_y
-	; mov dl, ' '
-	; int 21h
 	mov bl, tam
 	cmp snake_dir[bx], 0
 	jne dir_cim
@@ -2302,16 +2212,6 @@ ciclo_rato_b:
 	pop bx
 	pop ax
 
-	; mov ah, tail_x
-	; mov posx, ah
-	; goto_xy tail_x, tail_y
-	; mov dl,' '
-	; mov ah,02h
-	; int 21h
-	; inc posx
-	; goto_xy posx, tail_y
-	; mov dl, ' '
-	; int 21h
 	mov bl, tam
 	cmp snake_dir[bx], 0
 	jne dir_cim_b
@@ -2391,14 +2291,10 @@ display_pont:
 	jmp		display_pont
 
 fim_mostra:
-	; mov	ah, 09H
-	; lea dx, points_str
-	; int	21h
 	mov ah, 02H
 	mov dl, ' '
 	int 21h
 	goto_xy	posx, posy
-	;call 	limpa_aux
 	pop		dx
 	pop		cx
 	pop		bx
@@ -2488,7 +2384,6 @@ break_chars_0:
 	jmp		break_chars_0		; repetir o algoritmo até chegar à condicação de paragem
 
 fim_transform:
-	;call 	limpa_aux
 	pop		dx					; atualizar o registo
 	pop		cx					; atualizar o registo
 	pop		bx					; atualizar o registo
@@ -2542,7 +2437,7 @@ wrong_input endp
 ; :::::::::::::::::: Imprime avisos de wrong input ::::::::::::::::::
 
 ; :::::::::::::::::: Calcula Aleatorio ::::::::::::::::::
-; author: Professor -> A MERDA QUE O STOR FEZ NAO FUNCIONAVA, POR ISSO EU FIZ UM QUE FUNCIONA
+; Foi tomado o algoritmo do professor como inspiração para a criação deste 
 ; CalcAleat - calcula um numero aleatorio de 16 bits
 ; Parametros passados pela pilha
 ; entrada:
@@ -2583,38 +2478,6 @@ fim_rand:
 	pop dx
 	pop ax
 	ret
-
-	; sub		sp,2		; 
-	; push	bp
-	; mov		bp,sp
-	; push	ax
-	; push	cx
-	; push	dx	
-	; mov		ax,[bp+4]
-	; mov		[bp+2],ax
-
-	; mov		ah,00h
-	; int		1ah
-
-	; add		dx,ultimo_num_aleat	; vai buscar o aleat�rio anterior
-	; add		cx,dx
-	; mov		ax,65521
-	; push	dx
-	; mul		cx			
-	; pop		dx			 
-	; xchg	dl,dh
-	; add		dx,32749
-	; add		dx,ax
-
-	; mov		ultimo_num_aleat,dx	; guarda o novo numero aleat�rio
-
-	; mov		[BP+4],dx		; o aleat�rio � passado por pilha
-
-	; pop		dx
-	; pop		cx
-	; pop		ax
-	; pop		bp
-	; ret
 
 CalcAleat endp
 ; :::::::::::::::::: Calcula Aleatorio ::::::::::::::::::
@@ -2658,12 +2521,6 @@ valid_Ycoord proc
 	mov		dx,	ultimo_num_aleat
 	xor		ax,	ax
 	xor 	cx, cx
-	; cmp		dl, 20			
-	; jge		invalid_0
-	; cmp		dl, 2
-	; jb		invalid_2
-	; ret
-; invalid_0:
 	mov		al, dl
 	mov		cl, 20
 	mul		cl
@@ -2675,11 +2532,6 @@ valid_Ycoord proc
 	jne not_20
 	mov al, 19
 not_20:
-
-	; jmp		valid_fim
-; invalid_2:
-	; add		al, 4
-; valid_fim:
 	mov		posy, al	
 	ret
 valid_Ycoord endp
@@ -2688,15 +2540,10 @@ valid_Ycoord endp
 ; :::::::::::::::::: Adiciona Macas ::::::::::::::::::
 
 add_apple proc
-	; xor		ax, ax				
-	; mov		al, posx			; guardar a posicao anterior
-	; mov		posxa, al
-	; mov		ah, posy
-	; mov		posya, ah
+
 	mov		bl, 1
 	mov		nr_macas, bl
 generate_position:
-	;call 	CalcAleat
 	xor		ax, ax
 	xor		dx, dx
 	xor		bx, bx
@@ -2830,30 +2677,10 @@ cont_rato:
 	mul rato_x
 	mov bx,ax
 	mov dl,'.'
-	mov dh, 0ffh;78h
+	mov dh, 0ffh
 	mov es:[si][bx], dx
 	mov es:[si][bx+2], dx
 
-
-
-	; xor		ax, ax
-	; mov		ah, posx
-	; mov		al, posy
-	; mov		rato_x, ah
-	; mov		rato_y, al
-	; goto_xy rato_x, rato_y
-	
-	; mov		ah, 02H
-	; mov		dl, 'R'
-	; int		21H
-	; inc		rato_x
-	; goto_xy rato_x, rato_y
-	; ;dec		rato_x
-
-	; mov		ah, 02H
-	; mov		dl, 'R'
-	; int		21H
-	;goto_xy rato_x, rato_y
 
 	mov		bl, nr_ratos
 	inc		bl
@@ -2888,7 +2715,7 @@ mata_rato:
 	mul rato_x
 	mov bx,ax
 	mov dl,' '
-	mov dh, 7h;67h
+	mov dh, 7h
 	mov es:[si][bx], dx
 	mov es:[si][bx+2], dx
 
@@ -2896,69 +2723,14 @@ mata_rato:
 	mov rato_mov, 0
 	jmp fim_add_rato
 
-	; goto_xy rato_x, rato_y
-	; mov	ah, 02H
-	; mov	dl, ' '
-	; int	21H
-	; inc rato_x
-	; goto_xy rato_x, rato_y
-	; dec rato_x
-	; mov	ah, 02H
-	; mov	dl, ' '
-	; int	21h
-	
-	; mov	bl, 0
-	; mov	rato_nasce, bl
-	; mov ax, 0ee2eh     -> teste... apagar antes de enviar
-	; mov es:[0], ax		-> same ^
 wait_to_spawn:
 	inc rato_mov
 
 fim_add_rato:
 	ret
 add_ratos endp
-; :::::::::::::::::: Adiciona Ratos ::::::::::::::::::
-; verifica_rato proc
-; 	push ax
-; 	push bx
-; 	push dx
-; 	xor	ax, ax
-; 	mov	ah, 2ch
-; 	int	21H
 
-; 	mov al, dh
-; 	mov bl, 4
-; 	mul	bl
-; 	xor	bx, bx
-; 	mov	bl, 60
-; 	div	bl
-; 	xor	bx, bx
-; 	mov bl, tp_vida
-; 	sub	al, bl
-; 	cmp	al, 0
-; 	jbe	mata_rato
-; 	jmp	fim_1
 
-; mata_rato:
-; 	goto_xy rato_x, rato_y
-; 	mov	ah, 02H
-; 	mov	dl, ' '
-; 	int	21H
-; 	mov	bl, rato_x
-; 	mov	posx, bl
-; 	inc	posx
-; 	goto_xy posx, rato_y
-; 	mov	ah, 02H
-; 	mov	dl, ' '
-; 	int 21H
-; 	goto_xy posx, posy
-
-; fim_1:
-; 	pop dx
-; 	pop	bx
-; 	pop	ax
-; 	ret
-; verifica_rato endp
 ; :::::::::::::::::: Start Game ::::::::::::::::::
 start_game proc
 	lea		dx, GameBoardView
@@ -3009,9 +2781,6 @@ continue_setup:
 	xor		ax, ax
 	call	mostra_pontuacao
 	call 	move_snake
-	; cmp		al, 1Bh		; considerando que sempre o jogo acaba o jogador perdeu
-	; call	are_you_sure_about_that
-	; call	game_over		; podemos validar o ESC para perguntar se quer mesmo sair
 	ret
 abv12:
 	mov 	tail_y, al
@@ -3057,7 +2826,6 @@ hare_level:
 @@asd:
 	xor		ax,	ax
 	xor		bx, bx
-	; TODO: validar se a cabeça da cobra não nasce em cima de um muro   -> DONE! maybe
 	call 	CalcAleat
 	call	valid_Xcoord
 	mov 	head_x, al
@@ -3122,11 +2890,6 @@ regista_nome proc
 	int 21h
 	call get_player_name
 
-	; call clear_screen
-	; lea dx, player_name
-	; mov ah, 09H
-	; int 21H
-	; call get_menu_option
 
 	pop ax
 	ret
@@ -3214,8 +2977,6 @@ are_you_sure_about_that endp
 
 ; :::::::::::::::::: Game Over ::::::::::::::::::
 bonus_game_over proc
-	; TODO: rest em tudo o que é dados de jogo (para o caso do jogador querer voltar a jogar)
-	; acho que já está feito verificar
 	push ax
 	push dx
 	push bx
@@ -3226,26 +2987,14 @@ wrong_0:
 	call	UpdateStats
 	call	clear_screen
 	mov		tam, 0
-; 	lea		dx, GameOverView
-; 	mov		ah, 09h
-; 	int 	21h
-; 	call	get_menu_option
-; 	cmp		al, '1'					; jogador nao quer voltar a jogar
-; 	je		fim_game_over
-; 	cmp		al, '0'					; jogador quer voltar a jogar
-; 	je		restart_game
-	
-; 	call	wrong_input
-; 	jmp		wrong_0
 
-; restart_game:
+
 	mov		nr_ratos, 0
 	mov		nr_macas, 0
 	mov		pontos, 0
 	mov 	conta_MV, 0
 	mov 	conta_MM, 0
 	mov 	conta_RD, 0
-	;call	menu_controller
 
 fim_game_over:
 	pop bx
@@ -3255,8 +3004,6 @@ fim_game_over:
 bonus_game_over endp
 
 game_over proc
-	; TODO: rest em tudo o que é dados de jogo (para o caso do jogador querer voltar a jogar)
-	; acho que já está feito verificar
 	push ax
 	push dx
 	push bx
@@ -3266,26 +3013,13 @@ wrong_0:
 	call	UpdateStats
 	call	clear_screen
 	mov		tam, 0
-; 	lea		dx, GameOverView
-; 	mov		ah, 09h
-; 	int 	21h
-; 	call	get_menu_option
-; 	cmp		al, '1'					; jogador nao quer voltar a jogar
-; 	je		fim_game_over
-; 	cmp		al, '0'					; jogador quer voltar a jogar
-; 	je		restart_game
-	
-; 	call	wrong_input
-; 	jmp		wrong_0
 
-; restart_game:
 	mov		nr_ratos, 0
 	mov		nr_macas, 0
 	mov		pontos, 0
 	mov 	conta_MV, 0
 	mov 	conta_MM, 0
 	mov 	conta_RD, 0
-	;call	menu_controller
 
 fim_game_over:
 	pop bx
@@ -3313,14 +3047,6 @@ historico_jogos proc
 
 
 
-
-; append:
-; 	xor dx,dx
-; 	xor cx,cx
-; 	mov ah, 42h
-; 	mov al, 02h
-; 	int 21H
-; 	jc		erro_fich
 	xor ax,ax
 	xor si,si
 	xor cx,cx
@@ -3354,11 +3080,6 @@ order_cycle:
 	jmp write_curr
 
 test_next:
-; 	mov ah, 42h
-; 	mov al, 01h
-; 	xor cx,cx
-; 	mov dx, 8
-; 	int 21h
 	jmp order_cycle
 
 write_curr:
