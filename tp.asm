@@ -1954,7 +1954,7 @@ neg_points:
 	sub pontos, ax
 	call mostra_pontuacao 	; Mostra prontuação
 	call limpa_maca
-	call come_rato
+	call come_rato_bonus
 
 cont_ciclo:
 		cmp maca, 0
@@ -2270,6 +2270,87 @@ fim_come_rato:
 	mov rato_mov, 0
 	ret
 come_rato endp
+
+come_rato_bonus proc
+	xor cx,cx
+	xor bx,bx
+	cmp tam, 0
+	je 	fim_come_rato_b
+	mov cx, 5
+	cmp tam, 5
+	jae ciclo_rato_b
+	mov cl, tam
+ciclo_rato_b:
+	push ax
+	push bx
+	push dx
+
+	xor ax,ax
+	xor bx,bx
+	mov al, 160
+	mul tail_y
+	mov si,ax
+	mov al, 2
+	mul tail_x
+	mov bx,ax
+
+	mov dx, 0720h
+	mov es:[si][bx], dx
+	mov es:[si][bx+2], dx
+	
+	pop dx
+	pop bx
+	pop ax
+
+	; mov ah, tail_x
+	; mov posx, ah
+	; goto_xy tail_x, tail_y
+	; mov dl,' '
+	; mov ah,02h
+	; int 21h
+	; inc posx
+	; goto_xy posx, tail_y
+	; mov dl, ' '
+	; int 21h
+	mov bl, tam
+	cmp snake_dir[bx], 0
+	jne dir_cim_b
+	add tail_x, 2
+	cmp tail_x, 66
+	jb fim_rato_b
+	mov tail_x, 4
+	jmp fim_rato_b
+dir_cim_b:
+	cmp snake_dir[bx], 1
+	jne dir_esq_b
+	dec tail_y
+	cmp tail_y, 1
+	ja fim_rato_b
+	mov tail_y, 21 
+	jmp fim_rato_b
+dir_baix_b:
+	inc tail_y
+	cmp tail_y, 22
+	jb fim_rato_b
+	mov tail_y, 2
+fim_rato_b:
+	dec tam
+loop ciclo_rato_b
+fim_come_rato_b:
+	mov nr_ratos, 0
+	mov rato_mov, 0
+	ret
+dir_esq_b:
+	cmp snake_dir[bx], 2
+	jne dir_baix_b
+	sub tail_x, 2
+	cmp tail_x, 2
+	ja fim_rato_b
+	mov tail_x, 64
+	jmp fim_rato_b
+
+
+come_rato_bonus endp
 ; :::::::::::::::::: Movimento da Cobra ::::::::::::::::::
 
 ; :::::::::::::::::: Mostra Pontuação ::::::::::::::::::
